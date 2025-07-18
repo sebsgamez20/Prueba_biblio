@@ -43,6 +43,9 @@ class BookController extends Controller
 
             $book = Book::create($validated);
 
+            // Log para debugging
+            \Log::info('Libro creado:', $book->toArray());
+
             return response()->json([
                 'message' => 'Libro creado exitosamente',
                 'book' => $book
