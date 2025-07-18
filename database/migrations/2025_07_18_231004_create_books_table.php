@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('availability', ['available', 'borrowed', 'maintenance'])->default('available');
             $table->string('image')->nullable();
             $table->text('description')->nullable();
-            $table->string('isbn')->nullable()->unique();
             $table->integer('publication_year')->nullable();
             $table->timestamps();
         });

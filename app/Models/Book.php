@@ -14,7 +14,6 @@ class Book extends Model
         'availability',
         'image',
         'description',
-        'isbn',
         'publication_year',
     ];
 

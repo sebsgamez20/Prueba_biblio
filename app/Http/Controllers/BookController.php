@@ -6,6 +6,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -29,11 +30,16 @@ class BookController extends Controller
                 'author' => 'required|string|max:255',
                 'genre' => 'required|string|max:100',
                 'description' => 'nullable|string',
-                'isbn' => 'nullable|string|unique:books,isbn|max:20',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
+
+            // Manejar la subida de imagen
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('books', 'public');
+                $validated['image'] = $imagePath;
+            }
 
             $book = Book::create($validated);
 
@@ -83,11 +89,21 @@ class BookController extends Controller
                 'author' => 'sometimes|required|string|max:255',
                 'genre' => 'sometimes|required|string|max:100',
                 'description' => 'nullable|string',
-                'isbn' => 'nullable|string|unique:books,isbn,' . $id . '|max:20',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
+
+            // Manejar la subida de imagen
+            if ($request->hasFile('image')) {
+                // Eliminar imagen anterior si existe
+                if ($book->image && Storage::disk('public')->exists($book->image)) {
+                    Storage::disk('public')->delete($book->image);
+                }
+                
+                $imagePath = $request->file('image')->store('books', 'public');
+                $validated['image'] = $imagePath;
+            }
 
             $book->update($validated);
 
@@ -122,6 +138,11 @@ class BookController extends Controller
                 return response()->json([
                     'message' => 'No se puede eliminar el libro porque tiene préstamos activos'
                 ], 400);
+            }
+
+            // Eliminar imagen si existe
+            if ($book->image && Storage::disk('public')->exists($book->image)) {
+                Storage::disk('public')->delete($book->image);
             }
 
             $book->delete();

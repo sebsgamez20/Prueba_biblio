@@ -6,12 +6,12 @@ function BookForm({ onBookCreated, onCancel }) {
         author: '',
         genre: '',
         description: '',
-        isbn: '',
         publication_year: '',
-        image: '',
         availability: 'available'
     });
 
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,6 +38,20 @@ function BookForm({ onBookCreated, onCancel }) {
         }
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            
+            // Crear preview de la imagen
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -57,6 +71,10 @@ function BookForm({ onBookCreated, onCancel }) {
             newErrors.publication_year = 'El año de publicación debe ser válido';
         }
 
+        if (imageFile && imageFile.size > 2 * 1024 * 1024) { // 2MB
+            newErrors.image = 'La imagen no debe superar 2MB';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -71,13 +89,26 @@ function BookForm({ onBookCreated, onCancel }) {
         setIsSubmitting(true);
 
         try {
+            const formDataToSend = new FormData();
+            
+            // Agregar campos del formulario
+            Object.keys(formData).forEach(key => {
+                if (formData[key] !== '') {
+                    formDataToSend.append(key, formData[key]);
+                }
+            });
+
+            // Agregar imagen si existe
+            if (imageFile) {
+                formDataToSend.append('image', imageFile);
+            }
+
             const response = await fetch('/api/books', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify(formData)
+                body: formDataToSend
             });
 
             const data = await response.json();
@@ -89,11 +120,11 @@ function BookForm({ onBookCreated, onCancel }) {
                     author: '',
                     genre: '',
                     description: '',
-                    isbn: '',
                     publication_year: '',
-                    image: '',
                     availability: 'available'
                 });
+                setImageFile(null);
+                setImagePreview(null);
                 setErrors({});
                 
                 // Notificar al componente padre
@@ -212,20 +243,6 @@ function BookForm({ onBookCreated, onCancel }) {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ISBN
-                    </label>
-                    <input
-                        type="text"
-                        name="isbn"
-                        value={formData.isbn}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ej: 978-84-450-7179-3"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
                         Descripción
                     </label>
                     <textarea
@@ -240,16 +257,32 @@ function BookForm({ onBookCreated, onCancel }) {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        URL de la Imagen
+                        Imagen de Portada
                     </label>
                     <input
-                        type="url"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="https://ejemplo.com/imagen.jpg"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                            errors.image ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     />
+                    <p className="text-sm text-gray-500 mt-1">
+                        Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.
+                    </p>
+                    {errors.image && (
+                        <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+                    )}
+                    
+                    {imagePreview && (
+                        <div className="mt-3">
+                            <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="w-32 h-32 object-cover rounded-md border"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4">

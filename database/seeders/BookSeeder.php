@@ -19,7 +19,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Fantasía',
                 'availability' => 'available',
                 'description' => 'Una épica historia de fantasía sobre la lucha contra el mal.',
-                'isbn' => '978-84-450-7179-3',
                 'publication_year' => 1954,
             ],
             [
@@ -28,7 +27,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Realismo mágico',
                 'availability' => 'available',
                 'description' => 'La historia de la familia Buendía a lo largo de siete generaciones.',
-                'isbn' => '978-84-397-2071-7',
                 'publication_year' => 1967,
             ],
             [
@@ -37,7 +35,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Ciencia ficción',
                 'availability' => 'available',
                 'description' => 'Una distopía sobre una sociedad totalitaria controlada por el Gran Hermano.',
-                'isbn' => '978-84-397-2072-4',
                 'publication_year' => 1949,
             ],
             [
@@ -46,7 +43,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Novela clásica',
                 'availability' => 'available',
                 'description' => 'Las aventuras del ingenioso hidalgo Don Quijote y su fiel escudero Sancho Panza.',
-                'isbn' => '978-84-376-0494-7',
                 'publication_year' => 1605,
             ],
             [
@@ -55,7 +51,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Fantasía juvenil',
                 'availability' => 'available',
                 'description' => 'El primer año de Harry Potter en la escuela de magia Hogwarts.',
-                'isbn' => '978-84-9838-095-8',
                 'publication_year' => 1997,
             ],
             [
@@ -64,7 +59,6 @@ class BookSeeder extends Seeder
                 'genre' => 'Literatura infantil',
                 'availability' => 'available',
                 'description' => 'Una historia poética sobre la amistad, el amor y el sentido de la vida.',
-                'isbn' => '978-84-397-2073-1',
                 'publication_year' => 1943,
             ],
         ];

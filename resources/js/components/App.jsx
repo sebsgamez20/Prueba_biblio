@@ -31,6 +31,11 @@ function App() {
         setShowForm(false);
     };
 
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return null;
+        return `/storage/${imagePath}`;
+    };
+
     if (showForm) {
         return (
             <div className="min-h-screen bg-gray-100 py-8">
@@ -90,7 +95,7 @@ function App() {
                                         {book.image && (
                                             <div className="mb-4">
                                                 <img 
-                                                    src={book.image} 
+                                                    src={getImageUrl(book.image)} 
                                                     alt={book.title}
                                                     className="w-full h-48 object-cover rounded-md"
                                                     onError={(e) => {
