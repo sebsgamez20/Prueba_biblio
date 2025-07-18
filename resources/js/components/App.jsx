@@ -12,8 +12,11 @@ function App() {
 
     const fetchBooks = async () => {
         try {
+            console.log('Iniciando fetchBooks...');
             const response = await fetch('/api/books');
+            console.log('Respuesta de fetchBooks:', response.status);
             const data = await response.json();
+            console.log('Datos recibidos:', data);
             setBooks(data);
         } catch (error) {
             console.error('Error fetching books:', error);
@@ -23,7 +26,9 @@ function App() {
     };
 
     const handleBookCreated = (newBook) => {
-        setBooks(prev => [...prev, newBook]);
+        console.log('handleBookCreated llamado con:', newBook);
+        // Recargar la lista completa desde el servidor
+        fetchBooks();
         setShowForm(false);
     };
 

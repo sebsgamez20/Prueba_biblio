@@ -103,6 +103,8 @@ function BookForm({ onBookCreated, onCancel }) {
                 formDataToSend.append('image', imageFile);
             }
 
+            console.log('Enviando datos:', Object.fromEntries(formDataToSend));
+
             const response = await fetch('/api/books', {
                 method: 'POST',
                 headers: {
@@ -112,6 +114,8 @@ function BookForm({ onBookCreated, onCancel }) {
             });
 
             const data = await response.json();
+            console.log('Respuesta del servidor:', data);
+            console.log('Status de la respuesta:', response.status);
 
             if (response.ok) {
                 // Limpiar formulario
@@ -128,10 +132,14 @@ function BookForm({ onBookCreated, onCancel }) {
                 setErrors({});
                 
                 // Notificar al componente padre
-                if (onBookCreated) {
+                if (onBookCreated && data.book) {
+                    console.log('Libro creado exitosamente:', data.book);
                     onBookCreated(data.book);
+                } else {
+                    console.error('No se recibió el libro en la respuesta:', data);
                 }
             } else {
+                console.error('Error en la respuesta:', data);
                 if (data.errors) {
                     setErrors(data.errors);
                 } else {
@@ -139,6 +147,7 @@ function BookForm({ onBookCreated, onCancel }) {
                 }
             }
         } catch (error) {
+            console.error('Error de conexión:', error);
             setErrors({ general: 'Error de conexión. Inténtalo de nuevo.' });
         } finally {
             setIsSubmitting(false);
