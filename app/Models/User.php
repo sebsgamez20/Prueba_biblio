@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -44,5 +45,35 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relación con préstamos
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    // Método para obtener préstamos activos
+    public function activeLoans()
+    {
+        return $this->loans()->where('status', 'active')->get();
+    }
+
+    // Método para verificar si puede hacer más préstamos
+    public function canBorrowMore(): bool
+    {
+        return $this->activeLoans()->count() < 3;
+    }
+
+    // Método para obtener préstamos vencidos
+    public function overdueLoans()
+    {
+        return $this->loans()->where('status', 'overdue')->get();
+    }
+
+    // Método para calcular multa total
+    public function totalFines(): float
+    {
+        return $this->loans()->sum('fine_amount');
     }
 }
