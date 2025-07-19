@@ -61,9 +61,20 @@ class Loan extends Model
     // Método para verificar si puede ser renovado
     public function canBeRenewed(): bool
     {
-        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED]) && 
-               $this->renewal_count < self::MAX_RENEWALS &&
-               !$this->isOverdue();
+        // Verificar condiciones básicas del préstamo
+        if (!in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED]) || 
+            $this->renewal_count >= self::MAX_RENEWALS ||
+            $this->isOverdue()) {
+            return false;
+        }
+
+        // Verificar que el usuario no tenga otro préstamo renovado
+        $userRenewedLoans = $this->user->loans()
+            ->where('status', self::STATUS_RENEWED)
+            ->where('id', '!=', $this->id)
+            ->count();
+
+        return $userRenewedLoans === 0;
     }
 
     // Método para renovar préstamo
@@ -86,21 +97,32 @@ class Loan extends Model
     // Método para calcular multa (mantenemos el concepto aunque no cobremos)
     public function calculateFine(): float
     {
-        if (!$this->isOverdue()) {
+        // Si el préstamo no está vencido, no hay multa
+        if ($this->status !== self::STATUS_OVERDUE && !$this->isOverdue()) {
             return 0.00;
         }
 
+        // Calcular días de retraso
         $daysOverdue = Carbon::now()->diffInDays($this->due_date);
-        return $daysOverdue * 1.00; // $1 por día (conceptual)
+        return max(0, $daysOverdue) * 1.00; // $1 por día (conceptual)
+    }
+
+    // Método para verificar si puede ser devuelto
+    public function canBeReturned(): bool
+    {
+        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED, self::STATUS_OVERDUE]);
     }
 
     // Método para marcar como devuelto
     public function markAsReturned(): void
     {
+        // Calcular multa antes de marcar como devuelto
+        $fineAmount = $this->calculateFine();
+        
         $this->update([
             'status' => self::STATUS_RETURNED,
             'return_date' => Carbon::now(),
-            'fine_amount' => $this->calculateFine(),
+            'fine_amount' => $fineAmount,
         ]);
 
         // Marcar libro como disponible
@@ -121,23 +143,23 @@ class Loan extends Model
     // Método para verificar si está activo
     public function isActive(): bool
     {
-        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED]);
+        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED, self::STATUS_OVERDUE]);
     }
 
     // Método para obtener días restantes
     public function getDaysRemaining(): int
     {
-        if (!$this->isActive()) {
+        if (!in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED, self::STATUS_OVERDUE])) {
             return 0;
         }
 
-        return max(0, Carbon::now()->diffInDays($this->due_date, false));
+        return Carbon::now()->diffInDays($this->due_date, false);
     }
 
     // Método para verificar si está próximo a vencer (3 días antes)
     public function isNearDue(): bool
     {
-        if (!$this->isActive()) {
+        if (!in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED])) {
             return false;
         }
 
