@@ -255,6 +255,48 @@ Las migraciones crean las siguientes tablas:
 - **Archivos**: Validación de tipos y tamaños
 
 
+## 🚀 Despliegue en Render
+
+### Requisitos Previos
+- Cuenta en [Render](https://dashboard.render.com/)
+- Repositorio en GitHub
+- Base de datos PostgreSQL
+
+### Pasos de Despliegue
+1. **Preparar Repositorio**:
+   ```bash
+   git add .
+   git commit -m "Configuración para Render"
+   git push origin main
+   ```
+
+2. **Crear Servicio Web en Render**:
+   - Ve a [Render Dashboard](https://dashboard.render.com/)
+   - Crea un nuevo "Web Service"
+   - Conecta tu repositorio de GitHub
+   - Configura como servicio PHP
+
+3. **Configurar Variables de Entorno**:
+   ```env
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_URL=https://tu-app.onrender.com
+   DB_CONNECTION=pgsql
+   ```
+
+4. **Crear Base de Datos PostgreSQL**:
+   - Crea un nuevo servicio PostgreSQL en Render
+   - Conecta la base de datos al servicio web
+
+5. **Desplegar**:
+   - Render ejecutará automáticamente el script de construcción
+   - La aplicación estará disponible en la URL proporcionada
+
+### Archivos de Configuración
+- `render.yaml`: Configuración automática del despliegue
+- `render-build.sh`: Script de construcción personalizado
+- `Procfile`: Configuración del servidor web
+
 ## 👨‍💻 Autor
 
 Desarrollado como prueba tecnica para JR por Juan Sebastian Rodriguez Gamez :D.
