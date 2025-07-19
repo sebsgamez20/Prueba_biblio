@@ -27,11 +27,69 @@ function App() {
     
     // Estado para estadísticas
     const [showStatistics, setShowStatistics] = useState(false);
+    
+    // Estados para búsqueda y filtrado
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedGenre, setSelectedGenre] = useState('');
+    const [genres, setGenres] = useState([]);
+    const [filteredBooks, setFilteredBooks] = useState([]);
 
     useEffect(() => {
         checkAuthStatus();
         fetchBooks();
+        fetchGenres();
     }, []);
+
+    // Efecto para aplicar filtros cuando cambien los términos de búsqueda
+    useEffect(() => {
+        applyFilters();
+    }, [books, searchTerm, selectedGenre]);
+
+    const fetchGenres = async () => {
+        try {
+            console.log('Fetching genres...');
+            const response = await fetch('/api/books/genres');
+            console.log('Genres response status:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Genres received:', data);
+                setGenres(data);
+            } else {
+                console.error('Error response from genres endpoint:', response.status, response.statusText);
+                const errorText = await response.text();
+                console.error('Error details:', errorText);
+            }
+        } catch (error) {
+            console.error('Error fetching genres:', error);
+        }
+    };
+
+    const applyFilters = () => {
+        let filtered = [...books];
+        
+        // Aplicar búsqueda
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(book => 
+                book.title.toLowerCase().includes(term) ||
+                book.author.toLowerCase().includes(term) ||
+                (book.description && book.description.toLowerCase().includes(term))
+            );
+        }
+        
+        // Aplicar filtro de género
+        if (selectedGenre) {
+            filtered = filtered.filter(book => book.genre === selectedGenre);
+        }
+        
+        setFilteredBooks(filtered);
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setSelectedGenre('');
+    };
 
     // Efecto para manejar la tecla ESC
     useEffect(() => {
@@ -446,6 +504,81 @@ function App() {
                     </div>
                 )}
 
+                {/* Sección de Búsqueda y Filtros */}
+                <div className="mb-8">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200">
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                            {/* Búsqueda */}
+                            <div className="flex-1 w-full lg:w-auto">
+                                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Buscar libros
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        id="search"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Buscar por título, autor o descripción..."
+                                        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0000ab] focus:border-[#0000ab] transition-all duration-200 bg-white/90 backdrop-blur-sm"
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Filtro por Género */}
+                            <div className="w-full lg:w-64">
+                                <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Filtrar por género
+                                </label>
+                                <select
+                                    id="genre"
+                                    value={selectedGenre}
+                                    onChange={(e) => setSelectedGenre(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0000ab] focus:border-[#0000ab] transition-all duration-200 bg-white/90 backdrop-blur-sm"
+                                >
+                                    <option value="">Todos los géneros</option>
+                                    {genres.map((genre) => (
+                                        <option key={genre} value={genre}>
+                                            {genre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Botón Limpiar Filtros */}
+                            {(searchTerm || selectedGenre) && (
+                                <div className="w-full lg:w-auto flex items-end">
+                                    <button
+                                        onClick={clearFilters}
+                                        className="w-full lg:w-auto px-4 py-3 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 rounded-lg font-medium flex items-center justify-center"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Limpiar Filtros
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Resultados de búsqueda */}
+                        {(searchTerm || selectedGenre) && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                                <p className="text-sm text-gray-600">
+                                    Mostrando {filteredBooks.length} de {books.length} libros
+                                    {searchTerm && ` que coinciden con "${searchTerm}"`}
+                                    {selectedGenre && ` del género "${selectedGenre}"`}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Sección de Libros */}
                 <div className="mb-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
@@ -455,7 +588,7 @@ function App() {
                         </div>
                         <div className="text-left sm:text-right">
                             <p className="text-sm text-gray-600">Total de libros</p>
-                            <p className="text-xl sm:text-2xl font-bold text-[#0000ab]">{books.length}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-[#0000ab]">{filteredBooks.length > 0 ? filteredBooks.length : books.length}</p>
                         </div>
                     </div>
                 </div>
@@ -470,8 +603,8 @@ function App() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-                        {books.length > 0 ? (
-                            books.map((book) => (
+                        {(filteredBooks.length > 0 ? filteredBooks : books).length > 0 ? (
+                            (filteredBooks.length > 0 ? filteredBooks : books).map((book) => (
                                 <div key={book.id} className="group bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:border-[#0000ab]/30">
                                     {/* Imagen del Libro */}
                                     <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
@@ -587,11 +720,16 @@ function App() {
                                     <svg className="w-16 h-16 sm:w-24 sm:h-24 text-[#0000ab] mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                     </svg>
-                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Biblioteca Vacía</h3>
+                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                                        {books.length === 0 ? 'Biblioteca Vacía' : 'No se encontraron resultados'}
+                                    </h3>
                                     <p className="text-gray-600 text-base sm:text-lg mb-6">
-                                        No hay libros disponibles en este momento.
+                                        {books.length === 0 
+                                            ? 'No hay libros disponibles en este momento.'
+                                            : 'No se encontraron libros que coincidan con tu búsqueda.'
+                                        }
                                     </p>
-                                    {user.role === 'admin' && (
+                                    {books.length === 0 && user.role === 'admin' && (
                                         <button 
                                             onClick={() => setShowForm(true)}
                                             className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center justify-center"
@@ -600,6 +738,17 @@ function App() {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                             </svg>
                                             Agregar Primer Libro
+                                        </button>
+                                    )}
+                                    {(searchTerm || selectedGenre) && books.length > 0 && (
+                                        <button 
+                                            onClick={clearFilters}
+                                            className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center justify-center"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Limpiar Filtros
                                         </button>
                                     )}
                                 </div>

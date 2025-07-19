@@ -13,9 +13,31 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $books = Book::all();
+        $query = Book::query();
+        
+        // Búsqueda por título, autor o descripción
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'LIKE', "%{$search}%")
+                  ->orWhere('author', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        // Filtro por género
+        if ($request->has('genre') && !empty($request->genre)) {
+            $query->where('genre', $request->genre);
+        }
+        
+        // Filtro por disponibilidad
+        if ($request->has('availability') && !empty($request->availability)) {
+            $query->where('availability', $request->availability);
+        }
+        
+        $books = $query->get();
         
         // Verificar y corregir disponibilidad de cada libro
         foreach ($books as $book) {
@@ -23,9 +45,27 @@ class BookController extends Controller
         }
         
         // Recargar los libros para obtener la disponibilidad actualizada
-        $books = Book::all();
+        $books = $query->get();
         
         return response()->json($books);
+    }
+
+    /**
+     * Get all available genres for filtering
+     */
+    public function getGenres(): JsonResponse
+    {
+        try {
+            $genres = Book::distinct()->pluck('genre')->filter()->values()->sort();
+            
+            // Log para debugging
+            \Log::info('Géneros obtenidos:', $genres->toArray());
+            
+            return response()->json($genres);
+        } catch (\Exception $e) {
+            \Log::error('Error obteniendo géneros: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al obtener géneros'], 500);
+        }
     }
 
     /**
