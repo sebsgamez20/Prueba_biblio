@@ -1,61 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 Biblioteca Digital
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Un sistema completo de gestión de biblioteca desarrollado con **Laravel 11** y **React**, que permite a los usuarios explorar, rentar y gestionar libros, mientras que los administradores pueden administrar la colección completa.
 
-## About Laravel
+## 🚀 Características Principales
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 👥 Sistema de Usuarios
+- **Registro y Login**: Sistema de autenticación completo
+- **Roles**: Usuarios normales y Administradores
+- **Perfil de Usuario**: Gestión de información personal
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 📖 Gestión de Libros
+- **Catálogo Completo**: Exploración de todos los libros disponibles
+- **Información Detallada**: Título, autor, género, descripción, año de publicación
+- **Imágenes**: Soporte para portadas de libros (hasta 5MB)
+- **Estados**: Disponible, Prestado, En mantenimiento
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🔄 Sistema de Préstamos
+- **Renta de Libros**: Proceso simple de un clic
+- **Renovaciones**: Posibilidad de renovar préstamos (máximo 1 renovación)
+- **Devoluciones**: Sistema de devolución automática
+- **Límites**: Máximo 3 libros por usuario
+- **Vencimientos**: Control automático de fechas de vencimiento
 
-## Learning Laravel
+### 👑 Panel de Administración
+- **Gestión de Libros**: Crear, editar, eliminar libros
+- **Estadísticas**: Análisis completo del sistema
+  - Libros más rentados
+  - Estadísticas generales
+  - Préstamos por mes
+- **Gestión de Usuarios**: Crear administradores
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 📊 Estadísticas Avanzadas
+- **Libros Más Rentados**: Top 10 de libros populares
+- **Métricas Generales**: Total de libros, disponibles, préstamos
+- **Análisis Temporal**: Préstamos por mes (últimos 6 meses)
+- **Libro Más Popular**: Información del libro más rentado
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🛠️ Tecnologías Utilizadas
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Backend
+- **Laravel 11**: Framework PHP moderno
+- **MySQL**: Base de datos principal
+- **Eloquent ORM**: Gestión de modelos y relaciones
+- **API RESTful**: Endpoints para comunicación frontend-backend
 
-## Laravel Sponsors
+### Frontend
+- **React 18**: Biblioteca de interfaz de usuario
+- **Tailwind CSS**: Framework de estilos
+- **Vite**: Herramienta de construcción
+- **Hooks**: Gestión de estado y efectos
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Características Técnicas
+- **Responsive Design**: Compatible con móviles y desktop
+- **Modales Animados**: Interfaz moderna con transiciones
+- **Validación**: Frontend y backend
+- **Manejo de Errores**: Sistema robusto de errores
 
-### Premium Partners
+## 📋 Requisitos del Sistema
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Servidor
+- **PHP**: 8.2 o superior
+- **Composer**: Gestor de dependencias PHP
+- **MySQL**: 8.0 o superior
+- **Node.js**: 18 o superior
+- **npm**: Gestor de paquetes Node.js
 
-## Contributing
+### Extensiones PHP
+- BCMath PHP Extension
+- Ctype PHP Extension
+- cURL PHP Extension
+- DOM PHP Extension
+- Fileinfo PHP Extension
+- JSON PHP Extension
+- Mbstring PHP Extension
+- OpenSSL PHP Extension
+- PCRE PHP Extension
+- PDO PHP Extension
+- Tokenizer PHP Extension
+- XML PHP Extension
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Instalación
 
-## Code of Conduct
+### 1. Clonar el Repositorio
+```bash
+git clone <url-del-repositorio>
+cd Prueba_biblio
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. Instalar Dependencias PHP
+```bash
+composer install
+```
 
-## Security Vulnerabilities
+### 3. Configurar Variables de Entorno
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Editar el archivo `.env` con la configuración de tu base de datos:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nombre_de_tu_base_de_datos
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
 
-## License
+### 4. Configurar Base de Datos
+```bash
+php artisan migrate
+php artisan db:seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 5. Crear Enlace Simbólico para Storage
+```bash
+php artisan storage:link
+```
+
+### 6. Instalar Dependencias JavaScript
+```bash
+npm install
+```
+
+### 7. Compilar Assets
+```bash
+npm run build
+```
+
+### 8. Iniciar el Servidor
+```bash
+php artisan serve
+```
+
+El proyecto estará disponible en `http://localhost:8000`
+
+## 👤 Usuarios por Defecto
+
+### Administrador
+- **Email**: admin@biblioteca.com
+- **Contraseña**: password
+- **Rol**: Administrador
+
+### Usuario Normal
+- **Email**: user@biblioteca.com
+- **Contraseña**: password
+- **Rol**: Usuario
+
+## 📁 Estructura del Proyecto
+
+```
+Prueba_biblio/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── AuthController.php      # Autenticación
+│   │   │   ├── BookController.php      # Gestión de libros
+│   │   │   └── LoanController.php      # Gestión de préstamos
+│   │   └── Middleware/
+│   │       └── AdminMiddleware.php     # Middleware de admin
+│   ├── Models/
+│   │   ├── Book.php                    # Modelo de libros
+│   │   ├── Loan.php                    # Modelo de préstamos
+│   │   └── User.php                    # Modelo de usuarios
+│   └── Observers/
+│       └── LoanObserver.php            # Observador de préstamos
+├── resources/
+│   ├── js/
+│   │   ├── components/
+│   │   │   ├── App.jsx                 # Componente principal
+│   │   │   ├── BookForm.jsx            # Formulario de libros
+│   │   │   ├── BookInfoModal.jsx       # Modal de información
+│   │   │   ├── LoginForm.jsx           # Formulario de login
+│   │   │   ├── RegisterForm.jsx        # Formulario de registro
+│   │   │   ├── StatisticsModal.jsx     # Modal de estadísticas
+│   │   │   └── UserLoans.jsx           # Gestión de préstamos
+│   │   └── app.jsx                     # Punto de entrada React
+│   └── views/
+│       └── app.blade.php               # Vista principal
+├── routes/
+│   └── api.php                         # Rutas de la API
+└── database/
+    ├── migrations/                     # Migraciones de BD
+    └── seeders/                        # Datos de prueba
+```
+
+## 🔧 Configuración Adicional
+
+### Configuración de Archivos
+El sistema está configurado para aceptar imágenes de hasta **5MB**:
+- Validación backend: `max:5120` (5MB)
+- Validación frontend: `5 * 1024 * 1024` bytes
+- Configuración PHP: `upload_max_filesize 10M`
+
+### Configuración de Base de Datos
+Las migraciones crean las siguientes tablas:
+- `users`: Usuarios del sistema
+- `books`: Catálogo de libros
+- `loans`: Registro de préstamos
+
+## 📊 API Endpoints
+
+### Autenticación
+- `POST /api/register` - Registro de usuarios
+- `POST /api/login` - Inicio de sesión
+- `POST /api/logout` - Cerrar sesión
+- `GET /api/user` - Información del usuario
+
+### Libros
+- `GET /api/books` - Listar todos los libros
+- `POST /api/books` - Crear nuevo libro
+- `GET /api/books/{id}` - Obtener libro específico
+- `PUT /api/books/{id}` - Actualizar libro
+- `DELETE /api/books/{id}` - Eliminar libro
+
+### Préstamos
+- `POST /api/loans/rent` - Rentar libro
+- `GET /api/loans/user` - Préstamos del usuario
+- `POST /api/loans/{id}/renew` - Renovar préstamo
+- `POST /api/loans/{id}/return` - Devolver libro
+
+### Estadísticas
+- `GET /api/statistics` - Estadísticas del sistema
+
+## 🎨 Características de la Interfaz
+
+### Diseño Responsivo
+- **Mobile First**: Optimizado para dispositivos móviles
+- **Breakpoints**: Adaptable a tablets y desktop
+- **Grid System**: Layout flexible con Tailwind CSS
+
+### Componentes Interactivos
+- **Modales**: Overlays con animaciones suaves
+- **Formularios**: Validación en tiempo real
+- **Tablas**: Datos organizados y filtrables
+- **Gráficos**: Visualización de estadísticas
+
+### Paleta de Colores
+- **Primario**: Azul (#0000ab)
+- **Secundario**: Variaciones de gris
+- **Acentos**: Verde, rojo, amarillo para estados
+
+## 🔒 Seguridad
+
+### Autenticación
+- **Tokens**: Sistema de autenticación basado en tokens
+- **Middleware**: Protección de rutas sensibles
+- **Validación**: Sanitización de datos de entrada
+
+### Validación
+- **Frontend**: Validación en tiempo real con JavaScript
+- **Backend**: Validación robusta con Laravel
+- **Archivos**: Validación de tipos y tamaños
+
+
+## 👨‍💻 Autor
+
+Desarrollado como prueba tecnica para JR por Juan Sebastian Rodriguez Gamez :D.
+
+---
+
+**¡Disfruta explorando la Biblioteca Digital! 📚✨**
