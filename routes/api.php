@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LoanController;
 
 
 
@@ -24,4 +25,12 @@ Route::prefix('books')->group(function () {
     Route::get('/{book}', [BookController::class, 'show']);
     Route::put('/{book}', [BookController::class, 'update']);
     Route::delete('/{book}', [BookController::class, 'destroy']);
+});
+
+// Rutas de la API para préstamos
+Route::prefix('loans')->group(function () {
+    Route::post('/rent', [LoanController::class, 'rentBook']);
+    Route::get('/user', [LoanController::class, 'getUserLoans']);
+    Route::post('/{loan}/renew', [LoanController::class, 'renewLoan']);
+    Route::post('/{loan}/return', [LoanController::class, 'returnBook']);
 }); 

@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import BookForm from './BookForm';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import UserLoans from './UserLoans';
 
 function App() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showLoans, setShowLoans] = useState(false);
     const [user, setUser] = useState(null);
     const [authMode, setAuthMode] = useState('login'); // 'login' o 'register'
     const [showAuth, setShowAuth] = useState(false);
@@ -118,6 +120,37 @@ function App() {
         }
     };
 
+    const handleRentBook = async (bookId) => {
+        try {
+            const response = await fetch('/api/loans/rent', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ book_id: bookId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('¡Libro rentado exitosamente!');
+                // Recargar la lista de libros para actualizar disponibilidad
+                fetchBooks();
+            } else {
+                alert(`Error: ${data.message || 'No se pudo rentar el libro'}`);
+                if (data.errors) {
+                    console.error('Errores:', data.errors);
+                }
+            }
+        } catch (error) {
+            console.error('Error renting book:', error);
+            alert('Error al rentar el libro. Inténtalo de nuevo.');
+        }
+    };
+
+
+
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         return `/storage/${imagePath}`;
@@ -175,6 +208,13 @@ function App() {
         );
     }
 
+    // Si está mostrando los préstamos del usuario
+    if (showLoans) {
+        return (
+            <UserLoans token={token} onClose={() => setShowLoans(false)} />
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-100">
             <div className="container mx-auto px-4 py-8">
@@ -192,12 +232,25 @@ function App() {
                                 {user.role === 'admin' ? 'Administrador' : 'Usuario'}
                             </span>
                         </div>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                        >
-                            Cerrar Sesión
-                        </button>
+                        <div className="flex items-center space-x-2">
+                            {user.role !== 'admin' && (
+                                <button
+                                    onClick={() => setShowLoans(true)}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                    Mis Préstamos
+                                </button>
+                            )}
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 text-gray-600 bg-red-400 rounded-md hover:bg-red-300 transition-colors"
+                            >
+                                Cerrar Sesión
+                            </button>
+                        </div>
                     </div>
                     
                     <h1 className="text-4xl font-bold text-gray-800 mb-2">
@@ -278,7 +331,10 @@ function App() {
                                         
                                         {/* Botón de rentar solo para usuarios normales */}
                                         {user.role !== 'admin' && book.availability === 'available' && (
-                                            <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                            <button 
+                                                onClick={() => handleRentBook(book.id)}
+                                                className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                                            >
                                                 Rentar Libro
                                             </button>
                                         )}
