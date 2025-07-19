@@ -1,25 +1,71 @@
 import { useState, useEffect } from 'react';
 import BookForm from './BookForm';
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
 
 function App() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [user, setUser] = useState(null);
+    const [authMode, setAuthMode] = useState('login'); // 'login' o 'register'
+    const [showAuth, setShowAuth] = useState(false);
+    const [token, setToken] = useState(localStorage.getItem('token'));
 
     useEffect(() => {
+        checkAuthStatus();
         fetchBooks();
     }, []);
+
+    const checkAuthStatus = async () => {
+        if (!token) {
+            setUser(null);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/user', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user);
+            } else if (response.status === 401) {
+                // Token inválido, limpiar
+                setUser(null);
+                setToken(null);
+                localStorage.removeItem('token');
+            } else {
+                console.error('Error checking auth status:', response.status);
+                setUser(null);
+            }
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+            setUser(null);
+        }
+    };
 
     const fetchBooks = async () => {
         try {
             console.log('Iniciando fetchBooks...');
             const response = await fetch('/api/books');
             console.log('Respuesta de fetchBooks:', response.status);
-            const data = await response.json();
-            console.log('Datos recibidos:', data);
-            setBooks(data);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+                setBooks(data);
+            } else {
+                console.error('Error en la respuesta de libros:', response.status);
+                setBooks([]);
+            }
         } catch (error) {
             console.error('Error fetching books:', error);
+            setBooks([]);
         } finally {
             setLoading(false);
         }
@@ -27,7 +73,6 @@ function App() {
 
     const handleBookCreated = (newBook) => {
         console.log('handleBookCreated llamado con:', newBook);
-        // Recargar la lista completa desde el servidor
         fetchBooks();
         setShowForm(false);
     };
@@ -36,12 +81,80 @@ function App() {
         setShowForm(false);
     };
 
+    const handleLogin = (userData, authToken) => {
+        setUser(userData);
+        setToken(authToken);
+        localStorage.setItem('token', authToken);
+        setShowAuth(false);
+        setAuthMode('login');
+    };
+
+    const handleRegister = (userData, authToken) => {
+        setUser(userData);
+        setToken(authToken);
+        localStorage.setItem('token', authToken);
+        setShowAuth(false);
+        setAuthMode('login');
+    };
+
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('token');
+        } catch (error) {
+            console.error('Error logging out:', error);
+            // Limpiar de todas formas
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('token');
+        }
+    };
+
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         return `/storage/${imagePath}`;
     };
 
-    if (showForm) {
+    // Si no hay usuario autenticado, mostrar formulario de autenticación
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                            Biblioteca Digital
+                        </h1>
+                        <p className="text-gray-600">
+                            Sistema de gestión de libros con Laravel y React
+                        </p>
+                    </div>
+                    
+                    {authMode === 'login' ? (
+                        <LoginForm 
+                            onLogin={handleLogin} 
+                            onSwitchToRegister={() => setAuthMode('register')} 
+                        />
+                    ) : (
+                        <RegisterForm 
+                            onRegister={handleRegister} 
+                            onSwitchToLogin={() => setAuthMode('login')} 
+                        />
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // Si está mostrando el formulario de libro (solo para admins)
+    if (showForm && user.role === 'admin') {
         return (
             <div className="min-h-screen bg-gray-100 py-8">
                 <div className="container mx-auto px-4">
@@ -66,6 +179,27 @@ function App() {
         <div className="min-h-screen bg-gray-100">
             <div className="container mx-auto px-4 py-8">
                 <header className="text-center mb-8">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center space-x-4">
+                            <span className="text-sm text-gray-600">
+                                Bienvenido, {user.name}
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-sm ${
+                                user.role === 'admin' 
+                                    ? 'bg-purple-100 text-purple-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                            }`}>
+                                {user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                        >
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                    
                     <h1 className="text-4xl font-bold text-gray-800 mb-2">
                         Biblioteca Digital
                     </h1>
@@ -73,17 +207,19 @@ function App() {
                         Sistema de gestión de libros con Laravel y React
                     </p>
                     
-                    <div className="flex justify-center space-x-4">
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Registrar Libro
-                        </button>
-                    </div>
+                    {user.role === 'admin' && (
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                onClick={() => setShowForm(true)}
+                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                Registrar Libro
+                            </button>
+                        </div>
+                    )}
                 </header>
 
                 <main>
@@ -139,6 +275,13 @@ function App() {
                                                 {book.genre}
                                             </span>
                                         </div>
+                                        
+                                        {/* Botón de rentar solo para usuarios normales */}
+                                        {user.role !== 'admin' && book.availability === 'available' && (
+                                            <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                                Rentar Libro
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             ) : (
@@ -146,12 +289,14 @@ function App() {
                                     <p className="text-gray-600 text-lg mb-4">
                                         No hay libros disponibles en este momento.
                                     </p>
-                                    <button 
-                                        onClick={() => setShowForm(true)}
-                                        className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                                    >
-                                        Agregar primer libro
-                                    </button>
+                                    {user.role === 'admin' && (
+                                        <button 
+                                            onClick={() => setShowForm(true)}
+                                            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                        >
+                                            Agregar primer libro
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

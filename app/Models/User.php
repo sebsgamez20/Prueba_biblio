@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -22,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'api_token',
     ];
 
     /**
@@ -32,6 +35,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'api_token',
     ];
 
     /**
@@ -46,6 +50,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Constantes para roles
+    const ROLE_USER = 'user';
+    const ROLE_ADMIN = 'admin';
 
     // Relación con préstamos
     public function loans(): HasMany
@@ -75,5 +83,42 @@ class User extends Authenticatable
     public function totalFines(): float
     {
         return $this->loans()->sum('fine_amount');
+    }
+
+    // Métodos para verificar roles
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === self::ROLE_USER;
+    }
+
+    // Método para verificar si tiene multas pendientes
+    public function hasPendingFines(): bool
+    {
+        return $this->totalFines() > 0;
+    }
+
+    // Método para verificar si puede rentar (sin multas y menos de 3 libros)
+    public function canRent(): bool
+    {
+        return !$this->hasPendingFines() && $this->canBorrowMore();
+    }
+
+    // Método para generar token de API
+    public function generateApiToken(): string
+    {
+        $token = Str::random(60);
+        $this->update(['api_token' => $token]);
+        return $token;
+    }
+
+    // Método para limpiar token de API
+    public function clearApiToken(): void
+    {
+        $this->update(['api_token' => null]);
     }
 }
