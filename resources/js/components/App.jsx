@@ -218,51 +218,46 @@ function App() {
         );
     }
 
-    // Si está mostrando los préstamos del usuario
-    if (showLoans) {
-        return (
-            <UserLoans token={token} onClose={() => setShowLoans(false)} />
-        );
-    }
+
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-            {/* Patrón de fondo decorativo */}
-            <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
-                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+            {/* Patrón de fondo decorativo sutil */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-0 left-0 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '3s'}}></div>
+                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
             </div>
             
             {/* Contenido principal */}
             <div className="relative z-10">
             {/* Header Moderno */}
-            <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 shadow-2xl sticky top-0 z-40">
+            <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg sticky top-0 z-40">
                 <div className="container mx-auto px-4 sm:px-6 py-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                         {/* Logo y Título */}
                         <div className="flex items-center space-x-3 sm:space-x-4">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#0000ab] to-[#0000ab]/80 rounded-lg flex items-center justify-center shadow-md">
                                 <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                                     Biblioteca Digital
                                 </h1>
-                                <p className="text-xs sm:text-sm text-blue-200">Explora, descubre, aprende</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Explora, descubre, aprende</p>
                             </div>
                         </div>
 
                         {/* Información del Usuario y Botones */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                             <div className="text-left sm:text-right">
-                                <p className="text-sm font-medium text-white">{user.name}</p>
+                                <p className="text-sm font-medium text-gray-800">{user.name}</p>
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                     user.role === 'admin' 
-                                        ? 'bg-purple-500/20 text-purple-200 border border-purple-400/30' 
-                                        : 'bg-blue-500/20 text-blue-200 border border-blue-400/30'
+                                        ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                                        : 'bg-[#0000ab]/20 text-[#0000ab] border border-[#0000ab]/30'
                                 }`}>
                                     {user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
                                 </span>
@@ -273,7 +268,7 @@ function App() {
                                 {user.role !== 'admin' && (
                                     <button
                                         onClick={() => setShowLoans(true)}
-                                        className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center text-sm font-medium"
+                                        className="w-full sm:w-auto px-4 py-2 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center text-sm font-medium"
                                     >
                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -283,7 +278,7 @@ function App() {
                                 )}
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium flex items-center justify-center"
+                                    className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium flex items-center justify-center"
                                 >
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -301,15 +296,15 @@ function App() {
                 {/* Sección de Acciones del Admin */}
                 {user.role === 'admin' && (
                     <div className="mb-8">
-                        <div className="bg-black/20 backdrop-blur-xl rounded-2xl p-4 sm:p-6 shadow-2xl border border-white/10">
+                        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
                                 <div>
-                                    <h2 className="text-lg sm:text-xl font-bold text-white mb-2">Panel de Administración</h2>
-                                    <p className="text-sm sm:text-base text-blue-200">Gestiona la colección de libros de la biblioteca</p>
+                                    <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Panel de Administración</h2>
+                                    <p className="text-sm sm:text-base text-gray-600">Gestiona la colección de libros de la biblioteca</p>
                                 </div>
                                 <button
                                     onClick={() => setShowForm(true)}
-                                    className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
+                                    className="w-full sm:w-auto px-6 py-3 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
                                 >
                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -325,12 +320,12 @@ function App() {
                 <div className="mb-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
                         <div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Explorar Biblioteca</h2>
-                            <p className="text-sm sm:text-base text-blue-200">Descubre nuestra colección de libros</p>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Explorar Biblioteca</h2>
+                            <p className="text-sm sm:text-base text-gray-600">Descubre nuestra colección de libros</p>
                         </div>
                         <div className="text-left sm:text-right">
-                            <p className="text-sm text-blue-200">Total de libros</p>
-                            <p className="text-xl sm:text-2xl font-bold text-white">{books.length}</p>
+                            <p className="text-sm text-gray-600">Total de libros</p>
+                            <p className="text-xl sm:text-2xl font-bold text-[#0000ab]">{books.length}</p>
                         </div>
                     </div>
                 </div>
@@ -347,7 +342,7 @@ function App() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                         {books.length > 0 ? (
                             books.map((book) => (
-                                <div key={book.id} className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-white/20 hover:scale-105">
+                                <div key={book.id} className="group bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:border-[#0000ab]/30">
                                     {/* Imagen del Libro */}
                                     <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
                                         {book.image ? (
@@ -369,22 +364,22 @@ function App() {
                                         )}
                                         
                                         {/* Badge de Disponibilidad */}
-                                        <div className="absolute top-4 right-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-lg ${
+                                        <div className="absolute top-3 right-3">
+                                            <span className={`px-2 py-1 text-xs font-medium ${
                                                 book.availability === 'available' 
-                                                    ? 'bg-green-500 text-white' 
+                                                    ? 'bg-green-100 text-green-700 border border-green-200' 
                                                     : book.availability === 'borrowed'
-                                                    ? 'bg-yellow-500 text-white'
-                                                    : 'bg-red-500 text-white'
+                                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                                                    : 'bg-red-100 text-red-700 border border-red-200'
                                             }`}>
-                                                {book.availability === 'available' ? '📖 Disponible' :
-                                                 book.availability === 'borrowed' ? '📚 Prestado' : '🔧 Mantenimiento'}
+                                                {book.availability === 'available' ? 'Disponible' :
+                                                 book.availability === 'borrowed' ? 'Prestado' : 'Mantenimiento'}
                                             </span>
                                         </div>
 
                                         {/* Badge de Género */}
-                                        <div className="absolute top-4 left-4">
-                                            <span className="px-3 py-1 bg-blue-500/90 backdrop-blur-sm text-white rounded-full text-xs font-semibold shadow-lg">
+                                        <div className="absolute top-3 left-3">
+                                            <span className="px-2 py-1 bg-[#C4DFE6] text-[#07575B] border border-[#0000ab]/20 text-xs font-medium">
                                                 {book.genre}
                                             </span>
                                         </div>
@@ -392,7 +387,7 @@ function App() {
 
                                     {/* Contenido del Libro */}
                                     <div className="p-4 sm:p-6">
-                                        <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#0000ab] transition-colors">
                                             {book.title}
                                         </h3>
                                         
@@ -417,7 +412,7 @@ function App() {
                                         {user.role !== 'admin' && book.availability === 'available' && (
                                             <button 
                                                 onClick={() => handleRentBook(book.id)}
-                                                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg font-medium flex items-center justify-center group"
+                                                className="w-full px-4 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-sm hover:shadow-md font-medium flex items-center justify-center group"
                                             >
                                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -428,10 +423,10 @@ function App() {
 
                                         {user.role === 'admin' && (
                                             <div className="flex space-x-2">
-                                                <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                                                <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-medium">
                                                     Editar
                                                 </button>
-                                                <button className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium">
+                                                <button className="flex-1 px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium">
                                                     Eliminar
                                                 </button>
                                             </div>
@@ -441,18 +436,18 @@ function App() {
                             ))
                         ) : (
                             <div className="col-span-full text-center py-12 sm:py-20">
-                                <div className="bg-black/20 backdrop-blur-xl rounded-2xl p-6 sm:p-12 shadow-2xl border border-white/10">
-                                    <svg className="w-16 h-16 sm:w-24 sm:h-24 text-blue-300 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="bg-white/80 backdrop-blur-xl rounded-xl p-6 sm:p-12 shadow-lg border border-gray-200">
+                                    <svg className="w-16 h-16 sm:w-24 sm:h-24 text-[#0000ab] mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                     </svg>
-                                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">Biblioteca Vacía</h3>
-                                    <p className="text-blue-200 text-base sm:text-lg mb-6">
+                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Biblioteca Vacía</h3>
+                                    <p className="text-gray-600 text-base sm:text-lg mb-6">
                                         No hay libros disponibles en este momento.
                                     </p>
                                     {user.role === 'admin' && (
                                         <button 
                                             onClick={() => setShowForm(true)}
-                                            className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center justify-center"
+                                            className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center justify-center"
                                         >
                                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -467,6 +462,19 @@ function App() {
                 )}
             </main>
             </div>
+
+            {/* Modal de Préstamos */}
+            {showLoans && (
+                <UserLoans token={token} onClose={() => setShowLoans(false)} />
+            )}
+
+            {/* Modal de Formulario de Libro */}
+            {showForm && (
+                <BookForm 
+                    onBookCreated={handleBookCreated}
+                    onCancel={handleCancelForm}
+                />
+            )}
         </div>
     );
 }

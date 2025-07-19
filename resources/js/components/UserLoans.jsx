@@ -9,6 +9,25 @@ function UserLoans({ token, onClose }) {
         fetchUserLoans();
     }, []);
 
+    // Cerrar modal con tecla Escape y focus trap
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        // Deshabilitar scroll del body cuando el modal está abierto
+        document.body.style.overflow = 'hidden';
+
+        document.addEventListener('keydown', handleEscape);
+        
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [onClose]);
+
     const fetchUserLoans = async () => {
         try {
             const response = await fetch('/api/loans/user', {
@@ -115,22 +134,26 @@ function UserLoans({ token, onClose }) {
 
     if (loading) {
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                    <div className="text-center">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <p className="mt-2 text-gray-600">Cargando préstamos...</p>
-                    </div>
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4">
+                <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 text-center animate-in zoom-in-95 duration-300">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mb-4"></div>
+                    <p className="text-gray-700 font-medium">Cargando préstamos...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-white/20">
+        <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-300"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header del Modal */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 sm:p-6 rounded-t-3xl">
+                <div className="bg-gradient-to-r from-[#0000ab] to-[#0000ab]/80 text-white p-4 sm:p-6 rounded-t-3xl">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -140,12 +163,13 @@ function UserLoans({ token, onClose }) {
                             </div>
                             <div>
                                 <h2 className="text-xl sm:text-2xl font-bold">Mis Préstamos</h2>
-                                <p className="text-blue-100 text-xs sm:text-sm">Gestiona tus libros prestados</p>
+                                <p className="text-white/80 text-xs sm:text-sm">Gestiona tus libros prestados</p>
+                                <p className="text-white/60 text-xs mt-1 opacity-75">Presiona ESC o haz clic fuera para cerrar</p>
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200"
+                            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -155,24 +179,24 @@ function UserLoans({ token, onClose }) {
                 </div>
 
                 {/* Contenido del Modal */}
-                <div className="p-4 sm:p-6 max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto">
+                <div className="p-4 sm:p-6 max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto modal-scroll">
 
                 {/* Estadísticas */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-2xl border border-blue-200">
+                    <div className="bg-gradient-to-br from-[#0000ab]/10 to-[#0000ab]/20 p-4 sm:p-6 rounded-2xl">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#0000ab] rounded-xl flex items-center justify-center">
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.active_loans || 0}</div>
-                                <div className="text-xs sm:text-sm text-blue-600 font-medium">Préstamos Activos</div>
+                                <div className="text-2xl sm:text-3xl font-bold text-[#0000ab]">{stats.active_loans || 0}</div>
+                                <div className="text-xs sm:text-sm text-[#0000ab] font-medium">Préstamos Activos</div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-2xl border border-red-200">
+                    <div className="bg-gradient-to-br from-red-200 to-red-100 p-4 sm:p-6 rounded-2xl border border-red-200">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-xl flex items-center justify-center">
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +209,7 @@ function UserLoans({ token, onClose }) {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 sm:p-6 rounded-2xl border border-green-200">
+                    <div className="bg-gradient-to-br from-green-200 to-green-100 p-4 sm:p-6 rounded-2xl border border-green-200">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-xl flex items-center justify-center">
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
