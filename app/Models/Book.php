@@ -50,4 +50,18 @@ class Book extends Model
     {
         $this->update(['availability' => 'available']);
     }
+
+    // Método para verificar y corregir disponibilidad
+    public function checkAndFixAvailability(): void
+    {
+        $activeLoans = $this->loans()
+                           ->whereIn('status', ['active', 'renewed'])
+                           ->count();
+
+        if ($activeLoans === 0 && $this->availability === 'borrowed') {
+            $this->update(['availability' => 'available']);
+        } elseif ($activeLoans > 0 && $this->availability === 'available') {
+            $this->update(['availability' => 'borrowed']);
+        }
+    }
 }
