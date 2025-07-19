@@ -16,6 +16,15 @@ class BookController extends Controller
     public function index(): JsonResponse
     {
         $books = Book::all();
+        
+        // Verificar y corregir disponibilidad de cada libro
+        foreach ($books as $book) {
+            $book->checkAndFixAvailability();
+        }
+        
+        // Recargar los libros para obtener la disponibilidad actualizada
+        $books = Book::all();
+        
         return response()->json($books);
     }
 
@@ -161,4 +170,6 @@ class BookController extends Controller
             ], 500);
         }
     }
+
+
 }
