@@ -1,19 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-function BookForm({ onBookCreated, onCancel }) {
+function BookForm({ onBookCreated, onCancel, book, isEditing = false, token }) {
     const [formData, setFormData] = useState({
-        title: '',
-        author: '',
-        genre: '',
-        description: '',
-        publication_year: '',
-        availability: 'available'
+        title: book?.title || '',
+        author: book?.author || '',
+        genre: book?.genre || '',
+        description: book?.description || '',
+        publication_year: book?.publication_year || '',
+        availability: book?.availability || 'available'
     });
 
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Efecto para actualizar el formulario cuando cambie el libro a editar
+    useEffect(() => {
+        if (book && isEditing) {
+            setFormData({
+                title: book.title || '',
+                author: book.author || '',
+                genre: book.genre || '',
+                description: book.description || '',
+                publication_year: book.publication_year || '',
+                availability: book.availability || 'available'
+            });
+            
+            // Si el libro tiene imagen, mostrar preview
+            if (book.image) {
+                setImagePreview(`/storage/${book.image}`);
+            }
+        }
+    }, [book, isEditing]);
 
     const genres = [
         'Fantasía', 'Ciencia ficción', 'Misterio', 'Romance', 'Terror',
@@ -103,13 +122,28 @@ function BookForm({ onBookCreated, onCancel }) {
                 formDataToSend.append('image', imageFile);
             }
 
+            // Agregar método PUT para edición
+            if (isEditing) {
+                formDataToSend.append('_method', 'PUT');
+            }
+
             console.log('Enviando datos:', Object.fromEntries(formDataToSend));
 
-            const response = await fetch('/api/books', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
+            const url = isEditing ? `/api/books/${book.id}` : '/api/books';
+            const method = isEditing ? 'POST' : 'POST'; // POST con _method para PUT
+
+            const headers = {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            };
+
+            // Agregar token de autenticación si está disponible
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: headers,
                 body: formDataToSend
             });
 
@@ -118,22 +152,24 @@ function BookForm({ onBookCreated, onCancel }) {
             console.log('Status de la respuesta:', response.status);
 
             if (response.ok) {
-                // Limpiar formulario
-                setFormData({
-                    title: '',
-                    author: '',
-                    genre: '',
-                    description: '',
-                    publication_year: '',
-                    availability: 'available'
-                });
-                setImageFile(null);
-                setImagePreview(null);
+                // Limpiar formulario solo si no es edición
+                if (!isEditing) {
+                    setFormData({
+                        title: '',
+                        author: '',
+                        genre: '',
+                        description: '',
+                        publication_year: '',
+                        availability: 'available'
+                    });
+                    setImageFile(null);
+                    setImagePreview(null);
+                }
                 setErrors({});
                 
                 // Notificar al componente padre
                 if (onBookCreated && data.book) {
-                    console.log('Libro creado exitosamente:', data.book);
+                    console.log(isEditing ? 'Libro actualizado exitosamente:' : 'Libro creado exitosamente:', data.book);
                     onBookCreated(data.book);
                 } else {
                     console.error('No se recibió el libro en la respuesta:', data);
@@ -143,7 +179,7 @@ function BookForm({ onBookCreated, onCancel }) {
                 if (data.errors) {
                     setErrors(data.errors);
                 } else {
-                    setErrors({ general: data.message || 'Error al crear el libro' });
+                    setErrors({ general: data.message || `Error al ${isEditing ? 'actualizar' : 'crear'} el libro` });
                 }
             }
         } catch (error) {
@@ -155,24 +191,30 @@ function BookForm({ onBookCreated, onCancel }) {
     };
 
     return (
-        <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-            {/* Header del Formulario */}
-            <div className="bg-gradient-to-r from-[#0000ab] to-[#0000ab]/80 text-white p-4 sm:p-6 lg:p-8">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold">Registrar Nuevo Libro</h2>
-                                                        <p className="text-sm sm:text-base text-white/90">Completa la información del libro para agregarlo a la biblioteca</p>
+        <div className={`${isEditing ? 'w-full' : 'max-w-4xl mx-auto bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 overflow-hidden'}`}>
+            {/* Header del Formulario - Solo mostrar si no es edición */}
+            {!isEditing && (
+                <div className="bg-gradient-to-r from-[#0000ab] to-[#0000ab]/80 text-white p-4 sm:p-6 lg:p-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-bold">
+                                Registrar Nuevo Libro
+                            </h2>
+                            <p className="text-sm sm:text-base text-white/90">
+                                Completa la información del libro para agregarlo a la biblioteca
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Contenido del Formulario */}
-            <div className="p-4 sm:p-6 lg:p-8">
+            <div className={`${isEditing ? 'p-6 sm:p-8' : 'p-4 sm:p-6 lg:p-8'}`}>
                 {errors.general && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
                         <div className="flex items-center space-x-2">
@@ -367,9 +409,9 @@ function BookForm({ onBookCreated, onCancel }) {
                         ) : (
                             <>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isEditing ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" : "M5 13l4 4L19 7"} />
                                 </svg>
-                                <span>Registrar Libro</span>
+                                <span>{isEditing ? 'Actualizar Libro' : 'Registrar Libro'}</span>
                             </>
                         )}
                     </button>

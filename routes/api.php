@@ -21,10 +21,10 @@ Route::post('/create-admin', [AuthController::class, 'createAdmin']);
 // Rutas de la API para libros
 Route::prefix('books')->group(function () {
     Route::get('/', [BookController::class, 'index']);
-    Route::post('/', [BookController::class, 'store']);
+    Route::post('/', [BookController::class, 'store'])->middleware('admin');
     Route::get('/{book}', [BookController::class, 'show']);
-    Route::put('/{book}', [BookController::class, 'update']);
-    Route::delete('/{book}', [BookController::class, 'destroy']);
+    Route::put('/{book}', [BookController::class, 'update'])->middleware('admin');
+    Route::delete('/{book}', [BookController::class, 'destroy'])->middleware('admin');
 });
 
 // Rutas de la API para préstamos

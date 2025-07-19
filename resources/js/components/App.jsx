@@ -17,6 +17,12 @@ function App() {
     const [authMode, setAuthMode] = useState('login'); // 'login' o 'register'
     const [showAuth, setShowAuth] = useState(false);
     const [token, setToken] = useState(localStorage.getItem('token'));
+    
+    // Estados para edición y eliminación
+    const [editingBook, setEditingBook] = useState(null);
+    const [showEditForm, setShowEditForm] = useState(false);
+    const [deletingBook, setDeletingBook] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         checkAuthStatus();
@@ -36,12 +42,18 @@ function App() {
                 if (showForm) {
                     setShowForm(false);
                 }
+                if (showEditForm) {
+                    handleCancelEdit();
+                }
+                if (showDeleteConfirm) {
+                    handleCancelDelete();
+                }
             }
         };
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [showBookInfo, showLoans, showForm]);
+    }, [showBookInfo, showLoans, showForm, showEditForm, showDeleteConfirm]);
 
     const checkAuthStatus = async () => {
         if (!token) {
@@ -152,6 +164,67 @@ function App() {
     const handleCloseBookInfo = () => {
         setShowBookInfo(false);
         setSelectedBook(null);
+    };
+
+    // Función para manejar la edición de libros
+    const handleEditBook = (book) => {
+        setEditingBook(book);
+        setShowEditForm(true);
+    };
+
+    // Función para manejar la cancelación de edición
+    const handleCancelEdit = () => {
+        setShowEditForm(false);
+        setEditingBook(null);
+    };
+
+    // Función para manejar la actualización exitosa de un libro
+    const handleBookUpdated = (updatedBook) => {
+        setBooks(books.map(book => 
+            book.id === updatedBook.id ? updatedBook : book
+        ));
+        setShowEditForm(false);
+        setEditingBook(null);
+    };
+
+    // Función para manejar la eliminación de libros
+    const handleDeleteBook = (book) => {
+        setDeletingBook(book);
+        setShowDeleteConfirm(true);
+    };
+
+    // Función para confirmar la eliminación
+    const handleConfirmDelete = async () => {
+        if (!deletingBook) return;
+
+        try {
+            const response = await fetch(`/api/books/${deletingBook.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // Remover el libro de la lista
+                setBooks(books.filter(book => book.id !== deletingBook.id));
+                setShowDeleteConfirm(false);
+                setDeletingBook(null);
+            } else {
+                const data = await response.json();
+                alert(data.message || 'Error al eliminar el libro');
+            }
+        } catch (error) {
+            console.error('Error deleting book:', error);
+            alert('Error al eliminar el libro. Inténtalo de nuevo.');
+        }
+    };
+
+    // Función para cancelar la eliminación
+    const handleCancelDelete = () => {
+        setShowDeleteConfirm(false);
+        setDeletingBook(null);
     };
 
     const handleRentBook = async (bookId) => {
@@ -476,10 +549,22 @@ function App() {
 
                                         {user.role === 'admin' && (
                                             <div className="flex space-x-2">
-                                                <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-medium">
+                                                <button 
+                                                    onClick={() => handleEditBook(book)}
+                                                    className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors text-sm font-medium flex items-center justify-center"
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
                                                     Editar
                                                 </button>
-                                                <button className="flex-1 px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium">
+                                                <button 
+                                                    onClick={() => handleDeleteBook(book)}
+                                                    className="flex-1 px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center"
+                                                >
+                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
                                                     Eliminar
                                                 </button>
                                             </div>
@@ -526,6 +611,7 @@ function App() {
                 <BookForm 
                     onBookCreated={handleBookCreated}
                     onCancel={handleCancelForm}
+                    token={token}
                 />
             )}
 
@@ -537,6 +623,95 @@ function App() {
                     onRent={handleRentBook}
                     isRenting={isRenting}
                 />
+            )}
+
+            {/* Modal de Edición de Libro */}
+            {showEditForm && editingBook && (
+                <div 
+                    className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300 overflow-y-auto"
+                    onClick={(e) => e.target === e.currentTarget && handleCancelEdit()}
+                >
+                    <div 
+                        className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-5xl w-full my-8 border border-white/20 animate-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header del Modal */}
+                        <div className="bg-gradient-to-r from-[#0000ab] to-[#0000ab]/80 text-white p-4 sm:p-6 rounded-t-3xl">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl sm:text-2xl font-bold">Editar Libro</h2>
+                                        <p className="text-white/80 text-xs sm:text-sm">Modifica la información del libro</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleCancelEdit}
+                                    className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Contenido del Modal */}
+                        <div className="max-h-[calc(100vh-200px)] overflow-y-auto modal-scroll">                           
+                            <BookForm 
+                                book={editingBook}
+                                onBookCreated={handleBookUpdated}
+                                onCancel={handleCancelEdit}
+                                isEditing={true}
+                                token={token}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Confirmación de Eliminación */}
+            {showDeleteConfirm && deletingBook && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                     onClick={(e) => e.target === e.currentTarget && handleCancelDelete()}>
+                    <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-300">
+                        <div className="p-6 sm:p-8 text-center">
+                            {/* Icono de advertencia */}
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Confirmar Eliminación</h3>
+                            <p className="text-gray-600 mb-6">
+                                ¿Estás seguro de que quieres eliminar el libro <strong>"{deletingBook.title}"</strong>?
+                            </p>
+                            <p className="text-sm text-red-600 mb-6">
+                                Esta acción no se puede deshacer.
+                            </p>
+
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={handleCancelDelete}
+                                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 font-medium"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 font-medium"
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
