@@ -288,16 +288,7 @@ function App() {
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                            Biblioteca Digital
-                        </h1>
-                        <p className="text-gray-600">
-                            Sistema de gestión de libros con Laravel y React
-                        </p>
-                    </div>
-                    
+                <div className="container mx-auto px-4">                
                     {authMode === 'login' ? (
                         <LoginForm 
                             onLogin={handleLogin} 
@@ -374,7 +365,7 @@ function App() {
                                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                                     Biblioteca Digital
                                 </h1>
-                                <p className="text-xs sm:text-sm text-gray-600">Explora, descubre, aprende</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Explora y descubre libros</p>
                             </div>
                         </div>
 
@@ -382,13 +373,13 @@ function App() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                             <div className="text-left sm:text-right">
                                 <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                <h1 className={`inline-flex items-center px-2 py-0.5 rounded-full ${
                                     user.role === 'admin' 
                                         ? 'bg-purple-100 text-purple-700 border border-purple-200' 
                                         : 'bg-[#0000ab]/20 text-[#0000ab] border border-[#0000ab]/30'
                                 }`}>
                                     {user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
-                                </span>
+                                </h1>
                             </div>
                             
                             {/* Botones de Acción */}
@@ -629,7 +620,6 @@ function App() {
                 <BookForm 
                     onBookCreated={handleBookCreated}
                     onCancel={handleCancelForm}
-                    token={token}
                 />
             )}
 
@@ -685,7 +675,6 @@ function App() {
                                 onBookCreated={handleBookUpdated}
                                 onCancel={handleCancelEdit}
                                 isEditing={true}
-                                token={token}
                             />
                         </div>
                     </div>
@@ -736,7 +725,6 @@ function App() {
             {showStatistics && (
                 <StatisticsModal 
                     onClose={() => setShowStatistics(false)}
-                    token={token}
                 />
             )}
         </div>

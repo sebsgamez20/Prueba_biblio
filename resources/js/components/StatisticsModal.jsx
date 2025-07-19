@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function StatisticsModal({ onClose, token }) {
+function StatisticsModal({ onClose }) {
     const [statistics, setStatistics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,12 +12,7 @@ function StatisticsModal({ onClose, token }) {
     const fetchStatistics = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/statistics', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                }
-            });
+            const response = await fetch('/api/statistics');
 
             if (!response.ok) {
                 throw new Error('Error al obtener estadísticas');

@@ -40,7 +40,7 @@ class BookController extends Controller
                 'genre' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
 
@@ -102,7 +102,7 @@ class BookController extends Controller
                 'genre' => 'sometimes|required|string|max:100',
                 'description' => 'nullable|string',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
 

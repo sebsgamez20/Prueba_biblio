@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function BookForm({ onBookCreated, onCancel, book, isEditing = false, token }) {
+function BookForm({ onBookCreated, onCancel, book, isEditing = false }) {
     const [formData, setFormData] = useState({
         title: book?.title || '',
         author: book?.author || '',
@@ -90,8 +90,8 @@ function BookForm({ onBookCreated, onCancel, book, isEditing = false, token }) {
             newErrors.publication_year = 'El año de publicación debe ser válido';
         }
 
-        if (imageFile && imageFile.size > 2 * 1024 * 1024) { // 2MB
-            newErrors.image = 'La imagen no debe superar 2MB';
+        if (imageFile && imageFile.size > 5 * 1024 * 1024) { // 5MB
+            newErrors.image = 'La imagen no debe superar 5MB';
         }
 
         setErrors(newErrors);
@@ -135,11 +135,6 @@ function BookForm({ onBookCreated, onCancel, book, isEditing = false, token }) {
             const headers = {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             };
-
-            // Agregar token de autenticación si está disponible
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
 
             const response = await fetch(url, {
                 method: method,
@@ -360,7 +355,7 @@ function BookForm({ onBookCreated, onCancel, book, isEditing = false, token }) {
                             }`}
                         />
                         <p className="text-sm text-gray-600 mt-2">
-                            Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.
+                                                                    Formatos permitidos: JPG, PNG, GIF. Máximo 5MB.
                         </p>
                         {errors.image && (
                             <p className="text-red-600 text-sm mt-2 flex items-center">
