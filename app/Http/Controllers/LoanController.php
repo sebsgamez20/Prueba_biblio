@@ -136,6 +136,17 @@ class LoanController extends Controller
                     $errors[] = 'Ya has renovado este préstamo el máximo de veces permitido';
                 }
 
+                // Verificar si el usuario ya tiene otro préstamo renovado
+                $userRenewedLoans = $user->loans()
+                    ->where('status', Loan::STATUS_RENEWED)
+                    ->where('id', '!=', $loan->id)
+                    ->get();
+
+                if ($userRenewedLoans->count() > 0) {
+                    $renewedBook = $userRenewedLoans->first()->book;
+                    $errors[] = "Ya tienes un libro renovado: '{$renewedBook->title}'. Solo puedes renovar UN libro a la vez.";
+                }
+
                 return response()->json([
                     'success' => false,
                     'message' => 'No puedes renovar este préstamo',

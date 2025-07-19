@@ -61,9 +61,20 @@ class Loan extends Model
     // Método para verificar si puede ser renovado
     public function canBeRenewed(): bool
     {
-        return in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED]) && 
-               $this->renewal_count < self::MAX_RENEWALS &&
-               !$this->isOverdue();
+        // Verificar condiciones básicas del préstamo
+        if (!in_array($this->status, [self::STATUS_ACTIVE, self::STATUS_RENEWED]) || 
+            $this->renewal_count >= self::MAX_RENEWALS ||
+            $this->isOverdue()) {
+            return false;
+        }
+
+        // Verificar que el usuario no tenga otro préstamo renovado
+        $userRenewedLoans = $this->user->loans()
+            ->where('status', self::STATUS_RENEWED)
+            ->where('id', '!=', $this->id)
+            ->count();
+
+        return $userRenewedLoans === 0;
     }
 
     // Método para renovar préstamo

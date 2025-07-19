@@ -76,6 +76,25 @@ class User extends Authenticatable
         return $this->activeLoans()->count() < 3;
     }
 
+    // Método para verificar si puede renovar un préstamo
+    public function canRenewLoan(): bool
+    {
+        // Un usuario solo puede renovar UN libro a la vez
+        $renewedLoans = $this->loans()
+            ->where('status', Loan::STATUS_RENEWED)
+            ->count();
+        
+        return $renewedLoans === 0;
+    }
+
+    // Método para obtener el préstamo renovado actual (si existe)
+    public function getCurrentRenewedLoan()
+    {
+        return $this->loans()
+            ->where('status', Loan::STATUS_RENEWED)
+            ->first();
+    }
+
     // Método para obtener préstamos vencidos
     public function overdueLoans()
     {
