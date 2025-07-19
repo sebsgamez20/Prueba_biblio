@@ -3,12 +3,16 @@ import BookForm from './BookForm';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import UserLoans from './UserLoans';
+import BookInfoModal from './BookInfoModal';
 
 function App() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [showLoans, setShowLoans] = useState(false);
+    const [showBookInfo, setShowBookInfo] = useState(false);
+    const [selectedBook, setSelectedBook] = useState(null);
+    const [isRenting, setIsRenting] = useState(false);
     const [user, setUser] = useState(null);
     const [authMode, setAuthMode] = useState('login'); // 'login' o 'register'
     const [showAuth, setShowAuth] = useState(false);
@@ -18,6 +22,26 @@ function App() {
         checkAuthStatus();
         fetchBooks();
     }, []);
+
+    // Efecto para manejar la tecla ESC
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                if (showBookInfo) {
+                    handleCloseBookInfo();
+                }
+                if (showLoans) {
+                    setShowLoans(false);
+                }
+                if (showForm) {
+                    setShowForm(false);
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [showBookInfo, showLoans, showForm]);
 
     const checkAuthStatus = async () => {
         if (!token) {
@@ -120,7 +144,18 @@ function App() {
         }
     };
 
+    const handleShowBookInfo = (book) => {
+        setSelectedBook(book);
+        setShowBookInfo(true);
+    };
+
+    const handleCloseBookInfo = () => {
+        setShowBookInfo(false);
+        setSelectedBook(null);
+    };
+
     const handleRentBook = async (bookId) => {
+        setIsRenting(true);
         try {
             const response = await fetch('/api/loans/rent', {
                 method: 'POST',
@@ -137,6 +172,8 @@ function App() {
                 alert('¡Libro rentado exitosamente!');
                 // Recargar la lista de libros para actualizar disponibilidad
                 fetchBooks();
+                // Cerrar el modal
+                handleCloseBookInfo();
             } else {
                 // Mostrar mensajes de error más detallados
                 let errorMessage = data.message || 'No se pudo rentar el libro';
@@ -154,6 +191,8 @@ function App() {
         } catch (error) {
             console.error('Error renting book:', error);
             alert('Error al rentar el libro. Inténtalo de nuevo.');
+        } finally {
+            setIsRenting(false);
         }
     };
 
@@ -417,15 +456,20 @@ function App() {
                                         )}
 
                                         {/* Botón de Acción */}
-                                        {user.role !== 'admin' && book.availability === 'available' && (
+                                        {user.role !== 'admin' && (
                                             <button 
-                                                onClick={() => handleRentBook(book.id)}
-                                                className="w-full px-4 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-sm hover:shadow-md font-medium flex items-center justify-center group"
+                                                onClick={() => handleShowBookInfo(book)}
+                                                className={`w-full px-4 py-3 transition-all duration-200 shadow-sm hover:shadow-md font-medium flex items-center justify-center group ${
+                                                    book.availability === 'available' 
+                                                        ? 'bg-[#0000ab] text-white hover:bg-[#0000ab]/90' 
+                                                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                                }`}
                                             >
                                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
-                                                Rentar Libro
+                                                Ver Info
                                             </button>
                                         )}
 
@@ -481,6 +525,16 @@ function App() {
                 <BookForm 
                     onBookCreated={handleBookCreated}
                     onCancel={handleCancelForm}
+                />
+            )}
+
+            {/* Modal de Información del Libro */}
+            {showBookInfo && selectedBook && (
+                <BookInfoModal 
+                    book={selectedBook}
+                    onClose={handleCloseBookInfo}
+                    onRent={handleRentBook}
+                    isRenting={isRenting}
                 />
             )}
         </div>
