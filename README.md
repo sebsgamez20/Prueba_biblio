@@ -254,7 +254,6 @@ Las migraciones crean las siguientes tablas:
 - **Backend**: Validación robusta con Laravel
 - **Archivos**: Validación de tipos y tamaños
 
-
 ## 👨‍💻 Autor
 
 Desarrollado como prueba tecnica para JR por Juan Sebastian Rodriguez Gamez :D.

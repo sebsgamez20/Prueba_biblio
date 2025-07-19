@@ -13,13 +13,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuario normal
-        User::create([
-            'name' => 'Usuario Normal',
-            'email' => 'user@test.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-        ]);
 
         // Crear administrador
         User::create([
@@ -29,12 +22,5 @@ class UserSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        // Crear otro usuario normal
-        User::create([
-            'name' => 'Juan Pérez',
-            'email' => 'juan@test.com',
-            'password' => Hash::make('password'),
-            'role' => 'user',
-        ]);
     }
 } 
