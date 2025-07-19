@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('loan_date');
             $table->date('due_date');
             $table->date('return_date')->nullable();
-            $table->enum('status', ['active', 'returned', 'overdue'])->default('active');
+            $table->enum('status', ['active', 'returned', 'overdue', 'renewed'])->default('active');
             $table->decimal('fine_amount', 8, 2)->default(0.00);
             $table->text('notes')->nullable();
             $table->timestamps();

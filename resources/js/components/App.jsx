@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import BookForm from './BookForm';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import UserLoans from './UserLoans';
 
 function App() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showLoans, setShowLoans] = useState(false);
     const [user, setUser] = useState(null);
     const [authMode, setAuthMode] = useState('login'); // 'login' o 'register'
     const [showAuth, setShowAuth] = useState(false);
@@ -118,6 +120,37 @@ function App() {
         }
     };
 
+    const handleRentBook = async (bookId) => {
+        try {
+            const response = await fetch('/api/loans/rent', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ book_id: bookId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('¡Libro rentado exitosamente!');
+                // Recargar la lista de libros para actualizar disponibilidad
+                fetchBooks();
+            } else {
+                alert(`Error: ${data.message || 'No se pudo rentar el libro'}`);
+                if (data.errors) {
+                    console.error('Errores:', data.errors);
+                }
+            }
+        } catch (error) {
+            console.error('Error renting book:', error);
+            alert('Error al rentar el libro. Inténtalo de nuevo.');
+        }
+    };
+
+
+
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         return `/storage/${imagePath}`;
@@ -156,153 +189,292 @@ function App() {
     // Si está mostrando el formulario de libro (solo para admins)
     if (showForm && user.role === 'admin') {
         return (
-            <div className="min-h-screen bg-gray-100 py-8">
-                <div className="container mx-auto px-4">
-                    <div className="mb-6">
-                        <button
-                            onClick={() => setShowForm(false)}
-                            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                            Volver a la lista
-                        </button>
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+                {/* Patrón de fondo decorativo */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+                    <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+                </div>
+                
+                {/* Contenido principal */}
+                <div className="relative z-10 py-8">
+                    <div className="container mx-auto px-4">
+                        <div className="mb-6">
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="flex items-center text-white hover:text-blue-200 transition-colors font-medium"
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Volver a la lista
+                            </button>
+                        </div>
+                        <BookForm onBookCreated={handleBookCreated} onCancel={handleCancelForm} />
                     </div>
-                    <BookForm onBookCreated={handleBookCreated} onCancel={handleCancelForm} />
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="min-h-screen bg-gray-100">
-            <div className="container mx-auto px-4 py-8">
-                <header className="text-center mb-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-600">
-                                Bienvenido, {user.name}
-                            </span>
-                            <span className={`px-3 py-1 rounded-full text-sm ${
-                                user.role === 'admin' 
-                                    ? 'bg-purple-100 text-purple-800' 
-                                    : 'bg-blue-100 text-blue-800'
-                            }`}>
-                                {user.role === 'admin' ? 'Administrador' : 'Usuario'}
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                        >
-                            Cerrar Sesión
-                        </button>
-                    </div>
-                    
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                        Biblioteca Digital
-                    </h1>
-                    <p className="text-gray-600 mb-6">
-                        Sistema de gestión de libros con Laravel y React
-                    </p>
-                    
-                    {user.role === 'admin' && (
-                        <div className="flex justify-center space-x-4">
-                            <button
-                                onClick={() => setShowForm(true)}
-                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                            >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Registrar Libro
-                            </button>
-                        </div>
-                    )}
-                </header>
 
-                <main>
-                    {loading ? (
-                        <div className="text-center">
-                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            <p className="mt-2 text-gray-600">Cargando libros...</p>
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+            {/* Patrón de fondo decorativo sutil */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-0 left-0 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '3s'}}></div>
+                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-[#0000ab] rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '6s'}}></div>
+            </div>
+            
+            {/* Contenido principal */}
+            <div className="relative z-10">
+            {/* Header Moderno */}
+            <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg sticky top-0 z-40">
+                <div className="container mx-auto px-4 sm:px-6 py-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                        {/* Logo y Título */}
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#0000ab] to-[#0000ab]/80 rounded-lg flex items-center justify-center shadow-md">
+                                <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                                    Biblioteca Digital
+                                </h1>
+                                <p className="text-xs sm:text-sm text-gray-600">Explora, descubre, aprende</p>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {books.length > 0 ? (
-                                books.map((book) => (
-                                    <div key={book.id} className="bg-white rounded-lg shadow-md p-6">
-                                        {book.image && (
-                                            <div className="mb-4">
-                                                <img 
-                                                    src={getImageUrl(book.image)} 
-                                                    alt={book.title}
-                                                    className="w-full h-48 object-cover rounded-md"
-                                                    onError={(e) => {
-                                                        e.target.style.display = 'none';
-                                                    }}
-                                                />
+
+                        {/* Información del Usuario y Botones */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                            <div className="text-left sm:text-right">
+                                <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    user.role === 'admin' 
+                                        ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                                        : 'bg-[#0000ab]/20 text-[#0000ab] border border-[#0000ab]/30'
+                                }`}>
+                                    {user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
+                                </span>
+                            </div>
+                            
+                            {/* Botones de Acción */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                                {user.role !== 'admin' && (
+                                    <button
+                                        onClick={() => setShowLoans(true)}
+                                        className="w-full sm:w-auto px-4 py-2 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center text-sm font-medium"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Mis Préstamos
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium flex items-center justify-center"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Salir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {/* Contenido Principal */}
+            <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+                {/* Sección de Acciones del Admin */}
+                {user.role === 'admin' && (
+                    <div className="mb-8">
+                        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+                                <div>
+                                    <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Panel de Administración</h2>
+                                    <p className="text-sm sm:text-base text-gray-600">Gestiona la colección de libros de la biblioteca</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowForm(true)}
+                                    className="w-full sm:w-auto px-6 py-3 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    Agregar Nuevo Libro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Sección de Libros */}
+                <div className="mb-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
+                        <div>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Explorar Biblioteca</h2>
+                            <p className="text-sm sm:text-base text-gray-600">Descubre nuestra colección de libros</p>
+                        </div>
+                        <div className="text-left sm:text-right">
+                            <p className="text-sm text-gray-600">Total de libros</p>
+                            <p className="text-xl sm:text-2xl font-bold text-[#0000ab]">{books.length}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Grid de Libros */}
+                {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="text-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                            <p className="mt-4 text-gray-600 text-lg">Cargando biblioteca...</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                        {books.length > 0 ? (
+                            books.map((book) => (
+                                <div key={book.id} className="group bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:border-[#0000ab]/30">
+                                    {/* Imagen del Libro */}
+                                    <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden">
+                                        {book.image ? (
+                                            <img 
+                                                src={getImageUrl(book.image)} 
+                                                alt={book.title}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'flex';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center">
+                                                <svg className="w-16 h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                </svg>
                                             </div>
                                         )}
                                         
-                                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {book.title}
-                                        </h3>
-                                        <p className="text-gray-600 mb-2">
-                                            <strong>Autor:</strong> {book.author}
-                                        </p>
-                                        <p className="text-gray-600 mb-2">
-                                            <strong>Año:</strong> {book.publication_year || 'N/A'}
-                                        </p>
-                                        {book.description && (
-                                            <p className="text-gray-600 mb-4 text-sm line-clamp-2">
-                                                {book.description}
-                                            </p>
-                                        )}
-                                        <div className="flex justify-between items-center">
-                                            <span className={`px-3 py-1 rounded-full text-sm ${
+                                        {/* Badge de Disponibilidad */}
+                                        <div className="absolute top-3 right-3">
+                                            <span className={`px-2 py-1 text-xs font-medium ${
                                                 book.availability === 'available' 
-                                                    ? 'bg-green-100 text-green-800' 
+                                                    ? 'bg-green-100 text-green-700 border border-green-200' 
                                                     : book.availability === 'borrowed'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                                                    : 'bg-red-100 text-red-700 border border-red-200'
                                             }`}>
                                                 {book.availability === 'available' ? 'Disponible' :
                                                  book.availability === 'borrowed' ? 'Prestado' : 'Mantenimiento'}
                                             </span>
-                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                        </div>
+
+                                        {/* Badge de Género */}
+                                        <div className="absolute top-3 left-3">
+                                            <span className="px-2 py-1 bg-[#C4DFE6] text-[#07575B] border border-[#0000ab]/20 text-xs font-medium">
                                                 {book.genre}
                                             </span>
                                         </div>
+                                    </div>
+
+                                    {/* Contenido del Libro */}
+                                    <div className="p-4 sm:p-6">
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-[#0000ab] transition-colors">
+                                            {book.title}
+                                        </h3>
                                         
-                                        {/* Botón de rentar solo para usuarios normales */}
+                                        <div className="space-y-2 mb-4">
+                                            <p className="text-gray-600 text-sm">
+                                                <span className="font-semibold text-gray-700">Autor:</span> {book.author}
+                                            </p>
+                                            {book.publication_year && (
+                                                <p className="text-gray-600 text-sm">
+                                                    <span className="font-semibold text-gray-700">Año:</span> {book.publication_year}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {book.description && (
+                                            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                                                {book.description}
+                                            </p>
+                                        )}
+
+                                        {/* Botón de Acción */}
                                         {user.role !== 'admin' && book.availability === 'available' && (
-                                            <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                            <button 
+                                                onClick={() => handleRentBook(book.id)}
+                                                className="w-full px-4 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-sm hover:shadow-md font-medium flex items-center justify-center group"
+                                            >
+                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                </svg>
                                                 Rentar Libro
                                             </button>
                                         )}
+
+                                        {user.role === 'admin' && (
+                                            <div className="flex space-x-2">
+                                                <button className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-medium">
+                                                    Editar
+                                                </button>
+                                                <button className="flex-1 px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium">
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-12">
-                                    <p className="text-gray-600 text-lg mb-4">
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-12 sm:py-20">
+                                <div className="bg-white/80 backdrop-blur-xl rounded-xl p-6 sm:p-12 shadow-lg border border-gray-200">
+                                    <svg className="w-16 h-16 sm:w-24 sm:h-24 text-[#0000ab] mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Biblioteca Vacía</h3>
+                                    <p className="text-gray-600 text-base sm:text-lg mb-6">
                                         No hay libros disponibles en este momento.
                                     </p>
                                     {user.role === 'admin' && (
                                         <button 
                                             onClick={() => setShowForm(true)}
-                                            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                            className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-[#0000ab] text-white hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl font-medium flex items-center justify-center"
                                         >
-                                            Agregar primer libro
+                                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            Agregar Primer Libro
                                         </button>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                    )}
-                </main>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </main>
             </div>
+
+            {/* Modal de Préstamos */}
+            {showLoans && (
+                <UserLoans token={token} onClose={() => setShowLoans(false)} />
+            )}
+
+            {/* Modal de Formulario de Libro */}
+            {showForm && (
+                <BookForm 
+                    onBookCreated={handleBookCreated}
+                    onCancel={handleCancelForm}
+                />
+            )}
         </div>
     );
 }

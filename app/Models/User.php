@@ -64,7 +64,10 @@ class User extends Authenticatable
     // Método para obtener préstamos activos
     public function activeLoans()
     {
-        return $this->loans()->where('status', 'active')->get();
+        // Actualizar automáticamente el estado de préstamos vencidos
+        \App\Observers\LoanObserver::updateOverdueLoans();
+        
+        return $this->loans()->whereIn('status', [Loan::STATUS_ACTIVE, Loan::STATUS_RENEWED])->get();
     }
 
     // Método para verificar si puede hacer más préstamos
@@ -76,14 +79,41 @@ class User extends Authenticatable
     // Método para obtener préstamos vencidos
     public function overdueLoans()
     {
-        return $this->loans()->where('status', 'overdue')->get();
+        // Actualizar automáticamente el estado de préstamos vencidos
+        \App\Observers\LoanObserver::updateOverdueLoans();
+        
+        return $this->loans()->where('status', Loan::STATUS_OVERDUE)->get();
     }
 
-    // Método para calcular multa total
-    public function totalFines(): float
+
+
+    // Método para verificar si puede rentar un libro específico
+    public function canRentBook(Book $book): bool
     {
-        return $this->loans()->sum('fine_amount');
+        // Verificar si el libro está disponible
+        if ($book->availability !== 'available') {
+            return false;
+        }
+
+        // Verificar si puede hacer más préstamos
+        if (!$this->canBorrowMore()) {
+            return false;
+        }
+
+        return true;
     }
+
+    // Método para obtener préstamos próximos a vencer
+    public function nearDueLoans()
+    {
+        return $this->loans()
+            ->whereIn('status', [Loan::STATUS_ACTIVE, Loan::STATUS_RENEWED])
+            ->where('due_date', '<=', now()->addDays(3))
+            ->where('due_date', '>', now())
+            ->get();
+    }
+
+
 
     // Métodos para verificar roles
     public function isAdmin(): bool
@@ -96,17 +126,7 @@ class User extends Authenticatable
         return $this->role === self::ROLE_USER;
     }
 
-    // Método para verificar si tiene multas pendientes
-    public function hasPendingFines(): bool
-    {
-        return $this->totalFines() > 0;
-    }
 
-    // Método para verificar si puede rentar (sin multas y menos de 3 libros)
-    public function canRent(): bool
-    {
-        return !$this->hasPendingFines() && $this->canBorrowMore();
-    }
 
     // Método para generar token de API
     public function generateApiToken(): string

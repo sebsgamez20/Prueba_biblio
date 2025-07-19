@@ -155,81 +155,116 @@ function BookForm({ onBookCreated, onCancel }) {
     };
 
     return (
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Registrar Nuevo Libro</h2>
-            
-            {errors.general && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {errors.general}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+            {/* Header del Formulario */}
+            <div className="bg-gradient-to-r from-[#0000ab] to-[#0000ab]/80 text-white p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Título *
+                        <h2 className="text-2xl sm:text-3xl font-bold">Registrar Nuevo Libro</h2>
+                                                        <p className="text-sm sm:text-base text-white/90">Completa la información del libro para agregarlo a la biblioteca</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Contenido del Formulario */}
+            <div className="p-4 sm:p-6 lg:p-8">
+                {errors.general && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-medium">{errors.general}</span>
+                        </div>
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Título 
                         </label>
                         <input
                             type="text"
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.title ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 placeholder-gray-500 transition-all duration-200 ${
+                                errors.title ? 'border-red-400' : 'border-gray-300'
                             }`}
                             placeholder="Ingresa el título del libro"
                         />
                         {errors.title && (
-                            <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                            <p className="text-red-600 text-sm mt-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {errors.title}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Autor *
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Autor 
                         </label>
                         <input
                             type="text"
                             name="author"
                             value={formData.author}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.author ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 placeholder-gray-500 transition-all duration-200 ${
+                                errors.author ? 'border-red-400' : 'border-gray-300'
                             }`}
                             placeholder="Ingresa el nombre del autor"
                         />
                         {errors.author && (
-                            <p className="text-red-500 text-sm mt-1">{errors.author}</p>
+                            <p className="text-red-600 text-sm mt-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {errors.author}
+                            </p>
                         )}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Género *
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Género  
                         </label>
                         <select
                             name="genre"
                             value={formData.genre}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.genre ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 transition-all duration-200 ${
+                                errors.genre ? 'border-red-400' : 'border-gray-300'
                             }`}
                         >
-                            <option value="">Selecciona un género</option>
+                            <option value="" className="bg-white text-gray-800">Selecciona un género</option>
                             {genres.map(genre => (
-                                <option key={genre} value={genre}>{genre}</option>
+                                <option key={genre} value={genre} className="bg-white text-gray-800">{genre}</option>
                             ))}
                         </select>
                         {errors.genre && (
-                            <p className="text-red-500 text-sm mt-1">{errors.genre}</p>
+                            <p className="text-red-600 text-sm mt-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {errors.genre}
+                            </p>
                         )}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                             Año de Publicación
                         </label>
                         <input
@@ -237,68 +272,81 @@ function BookForm({ onBookCreated, onCancel }) {
                             name="publication_year"
                             value={formData.publication_year}
                             onChange={handleChange}
-                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                errors.publication_year ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 placeholder-gray-500 transition-all duration-200 ${
+                                errors.publication_year ? 'border-red-400' : 'border-gray-300'
                             }`}
                             placeholder="Ej: 2020"
                             min="1000"
                             max={new Date().getFullYear() + 1}
                         />
                         {errors.publication_year && (
-                            <p className="text-red-500 text-sm mt-1">{errors.publication_year}</p>
+                            <p className="text-red-600 text-sm mt-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {errors.publication_year}
+                            </p>
                         )}
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                         Descripción
                     </label>
                     <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        rows="3"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="4"
+                        className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 placeholder-gray-500 transition-all duration-200 resize-none"
                         placeholder="Breve descripción del libro..."
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                         Imagen de Portada
                     </label>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            errors.image ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                        Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.
-                    </p>
-                    {errors.image && (
-                        <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-                    )}
-                    
-                    {imagePreview && (
-                        <div className="mt-3">
-                            <img 
-                                src={imagePreview} 
-                                alt="Preview" 
-                                className="w-32 h-32 object-cover rounded-md border"
-                            />
-                        </div>
-                    )}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-[#0000ab] transition-colors duration-200">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0000ab]/50 focus:border-[#0000ab] text-gray-800 transition-all duration-200 ${
+                                errors.image ? 'border-red-400' : 'border-gray-300'
+                            }`}
+                        />
+                        <p className="text-sm text-gray-600 mt-2">
+                            Formatos permitidos: JPG, PNG, GIF. Máximo 2MB.
+                        </p>
+                        {errors.image && (
+                            <p className="text-red-600 text-sm mt-2 flex items-center">
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {errors.image}
+                            </p>
+                        )}
+                        
+                        {imagePreview && (
+                            <div className="mt-4">
+                                <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
+                                <img 
+                                    src={imagePreview} 
+                                    alt="Preview" 
+                                    className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 shadow-md"
+                                />
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                        className="w-full sm:w-auto px-6 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 font-medium"
                         disabled={isSubmitting}
                     >
                         Cancelar
@@ -306,12 +354,28 @@ function BookForm({ onBookCreated, onCancel }) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="w-full sm:w-auto px-8 py-3 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     >
-                        {isSubmitting ? 'Guardando...' : 'Registrar Libro'}
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Guardando...</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Registrar Libro</span>
+                            </>
+                        )}
                     </button>
                 </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 }
