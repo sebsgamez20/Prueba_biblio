@@ -64,6 +64,9 @@ class User extends Authenticatable
     // Método para obtener préstamos activos
     public function activeLoans()
     {
+        // Actualizar automáticamente el estado de préstamos vencidos
+        \App\Observers\LoanObserver::updateOverdueLoans();
+        
         return $this->loans()->whereIn('status', [Loan::STATUS_ACTIVE, Loan::STATUS_RENEWED])->get();
     }
 
@@ -76,6 +79,9 @@ class User extends Authenticatable
     // Método para obtener préstamos vencidos
     public function overdueLoans()
     {
+        // Actualizar automáticamente el estado de préstamos vencidos
+        \App\Observers\LoanObserver::updateOverdueLoans();
+        
         return $this->loans()->where('status', Loan::STATUS_OVERDUE)->get();
     }
 

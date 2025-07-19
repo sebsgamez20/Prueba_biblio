@@ -269,6 +269,9 @@ class LoanController extends Controller
                 ], 401);
             }
 
+            // Actualizar automáticamente el estado de préstamos vencidos
+            \App\Observers\LoanObserver::updateOverdueLoans();
+
             $loans = $user->loans()
                          ->with('book')
                          ->orderBy('created_at', 'desc')
