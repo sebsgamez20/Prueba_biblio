@@ -127,11 +127,11 @@ function UserLoans({ token, onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-white/20">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-white/20">
                 {/* Header del Modal */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-t-3xl">
-                    <div className="flex justify-between items-center">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 sm:p-6 rounded-t-3xl">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,8 +139,8 @@ function UserLoans({ token, onClose }) {
                                 </svg>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold">Mis Préstamos</h2>
-                                <p className="text-blue-100 text-sm">Gestiona tus libros prestados</p>
+                                <h2 className="text-xl sm:text-2xl font-bold">Mis Préstamos</h2>
+                                <p className="text-blue-100 text-xs sm:text-sm">Gestiona tus libros prestados</p>
                             </div>
                         </div>
                         <button
@@ -155,48 +155,48 @@ function UserLoans({ token, onClose }) {
                 </div>
 
                 {/* Contenido del Modal */}
-                <div className="p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
+                <div className="p-4 sm:p-6 max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto">
 
                 {/* Estadísticas */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-2xl border border-blue-200">
                         <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <div className="text-3xl font-bold text-blue-600">{stats.active_loans || 0}</div>
-                                <div className="text-sm text-blue-600 font-medium">Préstamos Activos</div>
+                                <div className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.active_loans || 0}</div>
+                                <div className="text-xs sm:text-sm text-blue-600 font-medium">Préstamos Activos</div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border border-red-200">
+                    <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-2xl border border-red-200">
                         <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-xl flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <div className="text-3xl font-bold text-red-600">{stats.overdue_loans || 0}</div>
-                                <div className="text-sm text-red-600 font-medium">Préstamos Vencidos</div>
+                                <div className="text-2xl sm:text-3xl font-bold text-red-600">{stats.overdue_loans || 0}</div>
+                                <div className="text-xs sm:text-sm text-red-600 font-medium">Préstamos Vencidos</div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 sm:p-6 rounded-2xl border border-green-200">
                         <div className="flex items-center space-x-3">
-                            <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <div className="text-3xl font-bold text-green-600">
+                                <div className="text-2xl sm:text-3xl font-bold text-green-600">
                                     {stats.can_borrow_more ? 'Sí' : 'No'}
                                 </div>
-                                <div className="text-sm text-green-600 font-medium">Puede Rentar Más</div>
+                                <div className="text-xs sm:text-sm text-green-600 font-medium">Puede Rentar Más</div>
                             </div>
                         </div>
                     </div>

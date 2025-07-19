@@ -157,22 +157,22 @@ function BookForm({ onBookCreated, onCancel }) {
     return (
         <div className="max-w-4xl mx-auto bg-black/20 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
             {/* Header del Formulario */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8">
-                <div className="flex items-center space-x-4 mb-4">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
                     <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-3xl font-bold">Registrar Nuevo Libro</h2>
-                        <p className="text-blue-50">Completa la información del libro para agregarlo a la biblioteca</p>
+                        <h2 className="text-2xl sm:text-3xl font-bold">Registrar Nuevo Libro</h2>
+                        <p className="text-sm sm:text-base text-blue-50">Completa la información del libro para agregarlo a la biblioteca</p>
                     </div>
                 </div>
             </div>
 
             {/* Contenido del Formulario */}
-            <div className="p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
                 {errors.general && (
                     <div className="mb-6 p-4 bg-red-500/20 border border-red-400/30 text-red-200 rounded-xl backdrop-blur-sm">
                         <div className="flex items-center space-x-2">
@@ -185,7 +185,7 @@ function BookForm({ onBookCreated, onCancel }) {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                         <label className="block text-sm font-medium text-white mb-2">
                             Título *
@@ -235,7 +235,7 @@ function BookForm({ onBookCreated, onCancel }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                         <label className="block text-sm font-medium text-white mb-2">
                             Género *
@@ -342,11 +342,11 @@ function BookForm({ onBookCreated, onCancel }) {
                     </div>
                 </div>
 
-                <div className="flex justify-end space-x-4 pt-6 border-t border-white/10">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-white/10">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-6 py-3 text-white bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 hover:border-white/40 transition-all duration-200 font-medium"
+                        className="w-full sm:w-auto px-6 py-3 text-white bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 hover:border-white/40 transition-all duration-200 font-medium"
                         disabled={isSubmitting}
                     >
                         Cancelar
@@ -354,7 +354,7 @@ function BookForm({ onBookCreated, onCancel }) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     >
                         {isSubmitting ? (
                             <>
