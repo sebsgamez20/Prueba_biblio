@@ -169,11 +169,10 @@ function App() {
             const data = await response.json();
 
             if (response.ok) {
-                alert('¡Libro rentado exitosamente!');
                 // Recargar la lista de libros para actualizar disponibilidad
                 fetchBooks();
-                // Cerrar el modal
-                handleCloseBookInfo();
+                // No cerrar el modal, el componente hijo manejará el éxito
+                return Promise.resolve();
             } else {
                 // Mostrar mensajes de error más detallados
                 let errorMessage = data.message || 'No se pudo rentar el libro';
@@ -187,10 +186,12 @@ function App() {
                 if (data.errors) {
                     console.error('Errores:', data.errors);
                 }
+                return Promise.reject(new Error(errorMessage));
             }
         } catch (error) {
             console.error('Error renting book:', error);
             alert('Error al rentar el libro. Inténtalo de nuevo.');
+            return Promise.reject(error);
         } finally {
             setIsRenting(false);
         }
