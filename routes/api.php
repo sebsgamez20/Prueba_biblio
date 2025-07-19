@@ -15,17 +15,20 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/user', [AuthController::class, 'user']);
 
-// Ruta para crear administradores (solo admins pueden acceder)
+// Ruta para crear administradores
 Route::post('/create-admin', [AuthController::class, 'createAdmin']);
 
 // Rutas de la API para libros
 Route::prefix('books')->group(function () {
     Route::get('/', [BookController::class, 'index']);
-    Route::post('/', [BookController::class, 'store'])->middleware('admin');
+    Route::post('/', [BookController::class, 'store']);
     Route::get('/{book}', [BookController::class, 'show']);
-    Route::put('/{book}', [BookController::class, 'update'])->middleware('admin');
-    Route::delete('/{book}', [BookController::class, 'destroy'])->middleware('admin');
+    Route::put('/{book}', [BookController::class, 'update']);
+    Route::delete('/{book}', [BookController::class, 'destroy']);
 });
+
+// Ruta para estadísticas
+Route::get('/statistics', [BookController::class, 'getStatistics']);
 
 // Rutas de la API para préstamos
 Route::prefix('loans')->group(function () {

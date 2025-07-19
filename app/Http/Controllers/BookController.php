@@ -40,7 +40,7 @@ class BookController extends Controller
                 'genre' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
 
@@ -102,7 +102,7 @@ class BookController extends Controller
                 'genre' => 'sometimes|required|string|max:100',
                 'description' => 'nullable|string',
                 'publication_year' => 'nullable|integer|min:1000|max:' . (date('Y') + 1),
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
                 'availability' => 'sometimes|in:available,borrowed,maintenance'
             ]);
 
@@ -140,36 +140,81 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Book $book)
     {
         try {
-            $book = Book::findOrFail($id);
-            
-            // Verificar si el libro tiene préstamos activos
-            if ($book->loans()->where('status', 'active')->exists()) {
-                return response()->json([
-                    'message' => 'No se puede eliminar el libro porque tiene préstamos activos'
-                ], 400);
-            }
-
-            // Eliminar imagen si existe
-            if ($book->image && Storage::disk('public')->exists($book->image)) {
-                Storage::disk('public')->delete($book->image);
-            }
-
             $book->delete();
-
-            return response()->json([
-                'message' => 'Libro eliminado exitosamente'
-            ]);
-
+            return response()->json(['message' => 'Libro eliminado exitosamente']);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al eliminar el libro',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => 'Error al eliminar el libro'], 500);
         }
     }
 
+    public function getStatistics()
+    {
+        try {
+            // Obtener libros más rentados
+            $mostRentedBooks = Book::withCount('loans')
+                ->orderBy('loans_count', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($book) {
+                    return [
+                        'id' => $book->id,
+                        'title' => $book->title,
+                        'author' => $book->author,
+                        'rentals_count' => $book->loans_count,
+                        'availability' => $book->availability,
+                        'image' => $book->image
+                    ];
+                });
 
+            // Obtener estadísticas generales
+            $totalBooks = Book::count();
+            $availableBooks = Book::where('availability', 'available')->count();
+            $totalLoans = \App\Models\Loan::count();
+            $mostRentedBook = Book::withCount('loans')->orderBy('loans_count', 'desc')->first();
+            $overdueLoans = \App\Models\Loan::where('status', 'overdue')->count();
+
+            // Obtener préstamos por mes (últimos 6 meses) - versión simplificada
+            $monthlyLoans = [];
+            try {
+                $monthlyLoans = \App\Models\Loan::selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, COUNT(*) as count')
+                    ->where('created_at', '>=', now()->subMonths(6))
+                    ->groupBy('year', 'month')
+                    ->orderBy('year', 'desc')
+                    ->orderBy('month', 'desc')
+                    ->get()
+                    ->map(function ($item) {
+                        $date = \Carbon\Carbon::createFromDate($item->year, $item->month, 1);
+                        return [
+                            'month' => $date->format('M Y'),
+                            'count' => $item->count
+                        ];
+                    });
+            } catch (\Exception $e) {
+                // Si falla la consulta de meses, usar array vacío
+                \Log::error('Error en consulta de préstamos por mes: ' . $e->getMessage());
+                $monthlyLoans = [];
+            }
+
+            return response()->json([
+                'most_rented_books' => $mostRentedBooks,
+                'general_stats' => [
+                    'total_books' => $totalBooks,
+                    'available_books' => $availableBooks,
+                    'total_loans' => $totalLoans,
+                    'most_rented_book' => $mostRentedBook ? [
+                        'title' => $mostRentedBook->title,
+                        'rentals_count' => $mostRentedBook->loans_count
+                    ] : null,
+                    'overdue_loans' => $overdueLoans
+                ],
+                'monthly_loans' => $monthlyLoans
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error en getStatistics: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al obtener estadísticas: ' . $e->getMessage()], 500);
+        }
+    }
 }

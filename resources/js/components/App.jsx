@@ -4,6 +4,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import UserLoans from './UserLoans';
 import BookInfoModal from './BookInfoModal';
+import StatisticsModal from './StatisticsModal';
 
 function App() {
     const [books, setBooks] = useState([]);
@@ -23,6 +24,9 @@ function App() {
     const [showEditForm, setShowEditForm] = useState(false);
     const [deletingBook, setDeletingBook] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    
+    // Estado para estadísticas
+    const [showStatistics, setShowStatistics] = useState(false);
 
     useEffect(() => {
         checkAuthStatus();
@@ -48,12 +52,15 @@ function App() {
                 if (showDeleteConfirm) {
                     handleCancelDelete();
                 }
+                if (showStatistics) {
+                    setShowStatistics(false);
+                }
             }
         };
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [showBookInfo, showLoans, showForm, showEditForm, showDeleteConfirm]);
+    }, [showBookInfo, showLoans, showForm, showEditForm, showDeleteConfirm, showStatistics]);
 
     const checkAuthStatus = async () => {
         if (!token) {
@@ -281,16 +288,7 @@ function App() {
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                            Biblioteca Digital
-                        </h1>
-                        <p className="text-gray-600">
-                            Sistema de gestión de libros con Laravel y React
-                        </p>
-                    </div>
-                    
+                <div className="container mx-auto px-4">                
                     {authMode === 'login' ? (
                         <LoginForm 
                             onLogin={handleLogin} 
@@ -367,7 +365,7 @@ function App() {
                                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                                     Biblioteca Digital
                                 </h1>
-                                <p className="text-xs sm:text-sm text-gray-600">Explora, descubre, aprende</p>
+                                <p className="text-xs sm:text-sm text-gray-600">Explora y descubre libros</p>
                             </div>
                         </div>
 
@@ -375,13 +373,13 @@ function App() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                             <div className="text-left sm:text-right">
                                 <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                <h1 className={`inline-flex items-center px-2 py-0.5 rounded-full ${
                                     user.role === 'admin' 
                                         ? 'bg-purple-100 text-purple-700 border border-purple-200' 
                                         : 'bg-[#0000ab]/20 text-[#0000ab] border border-[#0000ab]/30'
                                 }`}>
                                     {user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
-                                </span>
+                                </h1>
                             </div>
                             
                             {/* Botones de Acción */}
@@ -423,15 +421,26 @@ function App() {
                                     <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Panel de Administración</h2>
                                     <p className="text-sm sm:text-base text-gray-600">Gestiona la colección de libros de la biblioteca</p>
                                 </div>
-                                <button
-                                    onClick={() => setShowForm(true)}
-                                    className="w-full sm:w-auto px-6 py-3 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
-                                >
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
-                                    Agregar Nuevo Libro
-                                </button>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                                    <button
+                                        onClick={() => setShowStatistics(true)}
+                                        className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
+                                    >
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        Ver Estadísticas
+                                    </button>
+                                    <button
+                                        onClick={() => setShowForm(true)}
+                                        className="w-full sm:w-auto px-6 py-3 bg-[#0000ab] text-white rounded-lg hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center font-medium"
+                                    >
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        Agregar Nuevo Libro
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -611,7 +620,6 @@ function App() {
                 <BookForm 
                     onBookCreated={handleBookCreated}
                     onCancel={handleCancelForm}
-                    token={token}
                 />
             )}
 
@@ -667,7 +675,6 @@ function App() {
                                 onBookCreated={handleBookUpdated}
                                 onCancel={handleCancelEdit}
                                 isEditing={true}
-                                token={token}
                             />
                         </div>
                     </div>
@@ -712,6 +719,13 @@ function App() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal de Estadísticas */}
+            {showStatistics && (
+                <StatisticsModal 
+                    onClose={() => setShowStatistics(false)}
+                />
             )}
         </div>
     );
