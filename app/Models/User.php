@@ -100,7 +100,45 @@ class User extends Authenticatable
             return false;
         }
 
+        // Verificar si ya tiene un préstamo vencido del mismo libro
+        $overdueLoan = $this->loans()
+            ->where('book_id', $book->id)
+            ->where('status', Loan::STATUS_OVERDUE)
+            ->first();
+
+        if ($overdueLoan) {
+            return false;
+        }
+
         return true;
+    }
+
+    // Método para obtener razones por las que no puede rentar un libro
+    public function getRentBookRestrictions(Book $book): array
+    {
+        $restrictions = [];
+
+        // Verificar si el libro está disponible
+        if ($book->availability !== 'available') {
+            $restrictions[] = 'El libro no está disponible para renta';
+        }
+
+        // Verificar si puede hacer más préstamos
+        if (!$this->canBorrowMore()) {
+            $restrictions[] = 'Ya tienes el máximo de libros rentados (3)';
+        }
+
+        // Verificar si ya tiene un préstamo vencido del mismo libro
+        $overdueLoan = $this->loans()
+            ->where('book_id', $book->id)
+            ->where('status', Loan::STATUS_OVERDUE)
+            ->first();
+
+        if ($overdueLoan) {
+            $restrictions[] = 'Tienes un préstamo vencido de este libro. Debes devolverlo antes de poder rentarlo nuevamente.';
+        }
+
+        return $restrictions;
     }
 
     // Método para obtener préstamos próximos a vencer

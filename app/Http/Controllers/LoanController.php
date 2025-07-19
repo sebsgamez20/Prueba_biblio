@@ -45,20 +45,12 @@ class LoanController extends Controller
 
             // Verificar si el usuario puede rentar el libro
             if (!$user->canRentBook($book)) {
-                $errors = [];
-
-                if ($book->availability !== 'available') {
-                    $errors[] = 'El libro no está disponible para renta';
-                }
-
-                if (!$user->canBorrowMore()) {
-                    $errors[] = 'Ya tienes el máximo de libros rentados (3)';
-                }
-
+                $restrictions = $user->getRentBookRestrictions($book);
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'No puedes rentar este libro',
-                    'errors' => $errors
+                    'errors' => $restrictions
                 ], 400);
             }
 
@@ -215,10 +207,26 @@ class LoanController extends Controller
                 ], 404);
             }
 
-            if (!$loan->isActive()) {
+            // Debug: Log información del préstamo
+            \Log::info('Intentando devolver préstamo', [
+                'loan_id' => $loan->id,
+                'status' => $loan->status,
+                'can_be_returned' => $loan->canBeReturned(),
+                'is_active' => $loan->isActive(),
+                'is_overdue' => $loan->isOverdue(),
+                'due_date' => $loan->due_date,
+                'return_date' => $loan->return_date,
+            ]);
+
+            if (!$loan->canBeReturned()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Este préstamo ya ha sido devuelto'
+                    'message' => 'Este préstamo no puede ser devuelto',
+                    'errors' => [
+                        'El préstamo ya ha sido devuelto o no está en un estado válido para devolución',
+                        'Estado actual: ' . $loan->status,
+                        'Puede ser devuelto: ' . ($loan->canBeReturned() ? 'Sí' : 'No')
+                    ]
                 ], 400);
             }
 
@@ -274,6 +282,7 @@ class LoanController extends Controller
 
             $loans = $user->loans()
                          ->with('book')
+                         ->whereIn('status', [Loan::STATUS_ACTIVE, Loan::STATUS_RENEWED, Loan::STATUS_OVERDUE])
                          ->orderBy('created_at', 'desc')
                          ->get()
                          ->map(function ($loan) {
@@ -291,6 +300,8 @@ class LoanController extends Controller
                                  'is_overdue' => $loan->isOverdue(),
                                  'can_renew' => $loan->canBeRenewed(),
                                  'is_near_due' => $loan->isNearDue(),
+                                 'days_overdue' => $loan->isOverdue() ? $loan->due_date->diffInDays(now()) : 0,
+                                 'estimated_fine' => $loan->calculateFine(),
                              ];
                          });
 

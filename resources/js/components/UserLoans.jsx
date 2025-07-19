@@ -52,6 +52,24 @@ function UserLoans({ token, onClose }) {
     };
 
     const handleRenewLoan = async (loanId) => {
+        // Buscar el préstamo para mostrar información de confirmación
+        const loan = loans.find(l => l.id === loanId);
+        
+        if (!loan) {
+            alert('Error: No se encontró el préstamo');
+            return;
+        }
+
+        // Confirmar la renovación
+        const confirmMessage = `¿Estás seguro de que quieres renovar el préstamo de "${loan.book_title}"?\n\n` +
+                              `Fecha actual de vencimiento: ${loan.due_date}\n` +
+                              `Nueva fecha de vencimiento: ${loan.due_date} + 7 días\n` +
+                              `Renovaciones utilizadas: ${loan.renewal_count}/1`;
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
         try {
             const response = await fetch(`/api/loans/${loanId}/renew`, {
                 method: 'POST',
@@ -67,7 +85,15 @@ function UserLoans({ token, onClose }) {
                 alert('¡Préstamo renovado exitosamente!');
                 fetchUserLoans(); // Recargar préstamos
             } else {
-                alert(`Error: ${data.message || 'No se pudo renovar el préstamo'}`);
+                // Mostrar mensajes de error más detallados
+                let errorMessage = data.message || 'No se pudo renovar el préstamo';
+                
+                if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                    errorMessage = data.errors.join('\n• ');
+                    errorMessage = 'No se pudo renovar el préstamo:\n• ' + errorMessage;
+                }
+                
+                alert(errorMessage);
                 if (data.errors) {
                     console.error('Errores:', data.errors);
                 }
@@ -79,6 +105,32 @@ function UserLoans({ token, onClose }) {
     };
 
     const handleReturnBook = async (loanId) => {
+        // Buscar el préstamo para mostrar información de confirmación
+        const loan = loans.find(l => l.id === loanId);
+        
+        if (!loan) {
+            alert('Error: No se encontró el préstamo');
+            return;
+        }
+
+        // Confirmar la devolución
+        let confirmMessage = `¿Estás seguro de que quieres devolver el libro "${loan.book_title}"?\n\n` +
+                            `Fecha de préstamo: ${loan.loan_date}\n` +
+                            `Fecha de vencimiento: ${loan.due_date}\n` +
+                            `Días restantes: ${loan.days_remaining}`;
+
+        // Agregar información sobre multa si está vencido
+        if (loan.is_overdue) {
+            confirmMessage += `\n\n⚠️ PRÉSTAMO VENCIDO:\n` +
+                             `Días de retraso: ${loan.days_overdue || 0} días\n` +
+                             `Multa estimada: $${loan.estimated_fine || 0.00}\n` +
+                             `Al devolver ahora, la multa se calculará automáticamente.`;
+        }
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
         try {
             const response = await fetch(`/api/loans/${loanId}/return`, {
                 method: 'POST',
@@ -91,10 +143,28 @@ function UserLoans({ token, onClose }) {
             const data = await response.json();
 
             if (response.ok) {
-                alert('¡Libro devuelto exitosamente!');
+                let successMessage = '¡Libro devuelto exitosamente!';
+                
+                // Agregar información sobre multa si se aplicó
+                if (data.loan && data.loan.fine_amount > 0) {
+                    successMessage += `\n\nMulta aplicada: $${data.loan.fine_amount}`;
+                }
+                
+                alert(successMessage);
                 fetchUserLoans(); // Recargar préstamos
             } else {
-                alert(`Error: ${data.message || 'No se pudo devolver el libro'}`);
+                // Mostrar mensajes de error más detallados
+                let errorMessage = data.message || 'No se pudo devolver el libro';
+                
+                if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                    errorMessage = data.errors.join('\n• ');
+                    errorMessage = 'No se pudo devolver el libro:\n• ' + errorMessage;
+                }
+                
+                alert(errorMessage);
+                if (data.errors) {
+                    console.error('Errores:', data.errors);
+                }
             }
         } catch (error) {
             console.error('Error returning book:', error);
@@ -162,9 +232,9 @@ function UserLoans({ token, onClose }) {
                                 </svg>
                             </div>
                             <div>
-                                <h2 className="text-xl sm:text-2xl font-bold">Mis Préstamos</h2>
-                                <p className="text-white/80 text-xs sm:text-sm">Gestiona tus libros prestados</p>
-                                <p className="text-white/60 text-xs mt-1 opacity-75">Presiona ESC o haz clic fuera para cerrar</p>
+                                <h2 className="text-xl sm:text-2xl font-bold">Mis Préstamos Activos</h2>
+                                <p className="text-white/80 text-xs sm:text-sm">Gestiona tus libros actualmente prestados</p>
+
                             </div>
                         </div>
                         <button
@@ -192,7 +262,7 @@ function UserLoans({ token, onClose }) {
                             </div>
                             <div>
                                 <div className="text-2xl sm:text-3xl font-bold text-[#0000ab]">{stats.active_loans || 0}</div>
-                                <div className="text-xs sm:text-sm text-[#0000ab] font-medium">Préstamos Activos</div>
+                                <div className="text-xs sm:text-sm text-[#0000ab] font-medium">Préstamos Vigentes</div>
                             </div>
                         </div>
                     </div>
@@ -226,7 +296,7 @@ function UserLoans({ token, onClose }) {
                     </div>
                 </div>
 
-                {/* Lista de préstamos */}
+                {/* Lista de préstamos activos */}
                 {loans.length > 0 ? (
                     <div className="space-y-6">
                         {loans.map((loan) => (
@@ -238,9 +308,16 @@ function UserLoans({ token, onClose }) {
                                         </h3>
                                         <p className="text-gray-600">Autor: {loan.book_author}</p>
                                     </div>
-                                    <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(loan.status)}`}>
-                                        {getStatusText(loan.status)}
-                                    </span>
+                                    <div className="flex flex-col items-end space-y-1">
+                                        <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(loan.status)}`}>
+                                            {getStatusText(loan.status)}
+                                        </span>
+                                        {loan.status === 'overdue' && (
+                                            <span className="text-xs text-red-600 font-medium">
+                                                ⚠️ Requiere devolución
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
@@ -263,6 +340,24 @@ function UserLoans({ token, onClose }) {
                                         <p className="text-gray-600">{loan.renewal_count}/1</p>
                                     </div>
                                 </div>
+
+                                {/* Información adicional para préstamos vencidos */}
+                                {loan.is_overdue && (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                                        <div>
+                                            <span className="font-medium text-red-700">Días de retraso:</span>
+                                            <p className="text-red-600 font-semibold">{loan.days_overdue || 0} días</p>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium text-red-700">Multa estimada:</span>
+                                            <p className="text-red-600 font-semibold">${loan.estimated_fine || 0.00}</p>
+                                        </div>
+                                        <div className="md:col-span-1">
+                                            <span className="font-medium text-red-700">Estado:</span>
+                                            <p className="text-red-600 font-semibold">Vencido</p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {loan.return_date && (
                                     <div className="mb-4 text-sm">
@@ -287,15 +382,19 @@ function UserLoans({ token, onClose }) {
                                         </button>
                                     )}
                                     
-                                    {loan.is_active && (
+                                    {(loan.status === 'active' || loan.status === 'renewed' || loan.status === 'overdue') && (
                                         <button
                                             onClick={() => handleReturnBook(loan.id)}
-                                            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-md hover:shadow-lg font-medium flex items-center"
+                                            className={`px-6 py-3 text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg font-medium flex items-center ${
+                                                loan.status === 'overdue' 
+                                                    ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800' 
+                                                    : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                                            }`}
                                         >
                                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            Devolver Libro
+                                            {loan.status === 'overdue' ? 'Devolver (Vencido)' : 'Devolver Libro'}
                                         </button>
                                     )}
                                 </div>
@@ -303,9 +402,18 @@ function UserLoans({ token, onClose }) {
                                 {/* Alertas */}
                                 {loan.is_overdue && (
                                     <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded-lg">
-                                        <p className="text-red-700 text-sm font-medium">
-                                            ⚠️ Este préstamo está vencido. Por favor devuelve el libro lo antes posible.
-                                        </p>
+                                        <div className="text-red-700 text-sm">
+                                            <p className="font-medium mb-2">
+                                                ⚠️ Este préstamo está vencido. Por favor devuelve el libro lo antes posible.
+                                            </p>
+                                            <div className="space-y-1 text-xs">
+                                                <p><strong>Días de retraso:</strong> {loan.days_overdue || 0} días</p>
+                                                <p><strong>Multa estimada:</strong> ${loan.estimated_fine || 0.00}</p>
+                                                <p className="text-red-600 font-medium">
+                                                    💡 Devolver el libro ahora evitará que la multa siga aumentando.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
@@ -327,11 +435,16 @@ function UserLoans({ token, onClose }) {
                             </svg>
                             <h3 className="text-xl font-bold text-gray-800 mb-2">Sin Préstamos Activos</h3>
                             <p className="text-gray-600 mb-4">
-                                No tienes préstamos activos en este momento.
+                                No tienes libros prestados actualmente.
                             </p>
-                            <p className="text-gray-500">
-                                Ve a la biblioteca y renta algunos libros para comenzar.
+                            <p className="text-gray-500 text-sm">
+                                Los préstamos devueltos no aparecen en esta vista.
                             </p>
+                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-blue-700 text-sm">
+                                    💡 Ve a la biblioteca y renta algunos libros para comenzar.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
