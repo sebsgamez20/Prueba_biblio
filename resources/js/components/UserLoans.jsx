@@ -6,10 +6,15 @@ function UserLoans({ token, onClose }) {
     const [loading, setLoading] = useState(true);
     
     // Estados para el modal de renovación
-    const [modalState, setModalState] = useState('list'); // 'list', 'renewing', 'success', 'error'
+    const [modalState, setModalState] = useState('list'); // 'list', 'renewing', 'success', 'error', 'returning', 'return-success', 'return-error'
     const [renewingLoan, setRenewingLoan] = useState(null);
     const [renewalResult, setRenewalResult] = useState(null);
     const [renewalError, setRenewalError] = useState(null);
+    
+    // Estados para el modal de devolución
+    const [returningLoan, setReturningLoan] = useState(null);
+    const [returnResult, setReturnResult] = useState(null);
+    const [returnError, setReturnError] = useState(null);
 
     useEffect(() => {
         fetchUserLoans();
@@ -114,34 +119,24 @@ function UserLoans({ token, onClose }) {
         setRenewingLoan(null);
         setRenewalResult(null);
         setRenewalError(null);
+        setReturningLoan(null);
+        setReturnResult(null);
+        setReturnError(null);
     };
 
     const handleReturnBook = async (loanId) => {
-        // Buscar el préstamo para mostrar información de confirmación
+        // Buscar el préstamo
         const loan = loans.find(l => l.id === loanId);
         
         if (!loan) {
-            alert('Error: No se encontró el préstamo');
+            setReturnError('Error: No se encontró el préstamo');
+            setModalState('return-error');
             return;
         }
 
-        // Confirmar la devolución
-        let confirmMessage = `¿Estás seguro de que quieres devolver el libro "${loan.book_title}"?\n\n` +
-                            `Fecha de préstamo: ${loan.loan_date}\n` +
-                            `Fecha de vencimiento: ${loan.due_date}\n` +
-                            `Días restantes: ${loan.days_remaining}`;
-
-        // Agregar información sobre multa si está vencido
-        if (loan.is_overdue) {
-            confirmMessage += `\n\n⚠️ PRÉSTAMO VENCIDO:\n` +
-                             `Días de retraso: ${loan.days_overdue || 0} días\n` +
-                             `Multa estimada: $${loan.estimated_fine || 0.00}\n` +
-                             `Al devolver ahora, la multa se calculará automáticamente.`;
-        }
-
-        if (!confirm(confirmMessage)) {
-            return;
-        }
+        // Cambiar a estado de devolución
+        setReturningLoan(loan);
+        setModalState('returning');
 
         try {
             const response = await fetch(`/api/loans/${loanId}/return`, {
@@ -155,32 +150,29 @@ function UserLoans({ token, onClose }) {
             const data = await response.json();
 
             if (response.ok) {
-                let successMessage = '¡Libro devuelto exitosamente!';
+                // Éxito - cambiar a estado de éxito
+                setReturnResult(data.loan);
+                setModalState('return-success');
                 
-                // Agregar información sobre multa si se aplicó
-                if (data.loan && data.loan.fine_amount > 0) {
-                    successMessage += `\n\nMulta aplicada: $${data.loan.fine_amount}`;
-                }
-                
-                alert(successMessage);
-                fetchUserLoans(); // Recargar préstamos
+                // Recargar préstamos después de un delay para mostrar la animación
+                setTimeout(() => {
+                    fetchUserLoans();
+                }, 2000);
             } else {
-                // Mostrar mensajes de error más detallados
+                // Error - cambiar a estado de error
                 let errorMessage = data.message || 'No se pudo devolver el libro';
                 
                 if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
                     errorMessage = data.errors.join('\n• ');
-                    errorMessage = 'No se pudo devolver el libro:\n• ' + errorMessage;
                 }
                 
-                alert(errorMessage);
-                if (data.errors) {
-                    console.error('Errores:', data.errors);
-                }
+                setReturnError(errorMessage);
+                setModalState('return-error');
             }
         } catch (error) {
             console.error('Error returning book:', error);
-            alert('Error al devolver el libro. Inténtalo de nuevo.');
+            setReturnError('Error al devolver el libro. Inténtalo de nuevo.');
+            setModalState('return-error');
         }
     };
 
@@ -231,7 +223,7 @@ function UserLoans({ token, onClose }) {
             onClick={onClose}
         >
             <div 
-                className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300"
+                className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-5xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header del Modal */}
@@ -582,7 +574,7 @@ function UserLoans({ token, onClose }) {
                         </div>
                     )}
 
-                    {/* Vista de Error */}
+                    {/* Vista de Error de Renovación */}
                     {modalState === 'error' && renewalError && (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
                             {/* Icono de error */}
@@ -612,6 +604,168 @@ function UserLoans({ token, onClose }) {
                                     {renewingLoan && (
                                         <button
                                             onClick={() => handleRenewLoan(renewingLoan.id)}
+                                            className="px-6 py-3 bg-[#0000ab] text-white rounded-xl hover:bg-[#0000ab]/90 transition-all duration-200 font-medium"
+                                        >
+                                            Intentar de Nuevo
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vista de Devolución en Proceso */}
+                    {modalState === 'returning' && returningLoan && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            {/* Animación de devolución */}
+                            <div className="relative mb-8">
+                                <div className="w-32 h-40 bg-gradient-to-br from-green-600 to-green-700 rounded-lg shadow-2xl transform transition-all duration-1000 animate-pulse">
+                                    {/* Libro con flecha de devolución */}
+                                    <div className="absolute inset-2 bg-white rounded-sm opacity-90"></div>
+                                    <div className="absolute inset-3 bg-gray-100 rounded-sm opacity-80"></div>
+                                    <div className="absolute inset-4 bg-gray-200 rounded-sm opacity-70"></div>
+                                    
+                                    {/* Flecha de devolución */}
+                                    <div className="absolute -right-8 top-1/2 transform -translate-y-1/2">
+                                        <svg className="w-8 h-8 text-green-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </div>
+                                    
+                                    {/* Icono de biblioteca */}
+                                    <div className="absolute -right-16 top-1/2 transform -translate-y-1/2">
+                                        <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold text-green-600">Devolviendo Libro</h2>
+                                <p className="text-lg text-gray-700">
+                                    Procesando devolución de <strong>"{returningLoan.book_title}"</strong>
+                                </p>
+                                <div className="bg-green-50 border border-green-200 rounded-xl p-4 max-w-md">
+                                    <div className="flex items-center space-x-3">
+                                        <svg className="w-6 h-6 text-green-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <div className="text-left">
+                                            <p className="text-green-800 font-medium">Procesando devolución...</p>
+                                            <p className="text-green-600">Calculando multa si aplica</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vista de Éxito de Devolución */}
+                    {modalState === 'return-success' && returnResult && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            {/* Animación de éxito de devolución */}
+                            <div className="relative mb-8">
+                                <div className="w-32 h-40 bg-gradient-to-br from-green-600 to-green-700 rounded-lg shadow-2xl transform transition-all duration-1000">
+                                    {/* Libro cerrado con check */}
+                                    <div className="absolute inset-2 bg-white rounded-sm opacity-90"></div>
+                                    <div className="absolute inset-3 bg-gray-100 rounded-sm opacity-80"></div>
+                                    <div className="absolute inset-4 bg-gray-200 rounded-sm opacity-70"></div>
+                                    
+                                    {/* Línea de cierre del libro */}
+                                    <div className="absolute inset-y-2 left-1/2 transform -translate-x-1/2 w-0.5 bg-gray-400"></div>
+                                </div>
+                                
+                                {/* Icono de check flotante */}
+                                <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                
+                                {/* Icono de biblioteca */}
+                                <div className="absolute -right-16 top-1/2 transform -translate-y-1/2">
+                                    <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center animate-pulse">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mensaje de éxito */}
+                            <div className="space-y-4">
+                                <h2 className="text-3xl font-bold text-green-600">¡Libro Devuelto!</h2>
+                                <p className="text-xl text-gray-700">
+                                    <strong>"{returnResult.book_title}"</strong> ha sido devuelto exitosamente
+                                </p>
+                                
+                                {/* Información de la devolución */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {returnResult.return_date ? 'Completado' : 'En proceso'}
+                                        </div>
+                                        <div className="text-sm text-blue-600 font-medium">Estado</div>
+                                    </div>
+                                </div>
+
+                                {/* Fecha de devolución */}
+                                <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-xl p-4 max-w-md">
+                                    <div className="flex items-center space-x-3">
+                                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <div className="text-left">
+                                            <p className="text-green-800 font-medium">Fecha de devolución</p>
+                                            <p className="text-green-600 font-semibold">{returnResult.return_date || 'Hoy'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Botón para volver */}
+                                <button
+                                    onClick={handleBackToList}
+                                    className="mt-6 px-8 py-3 bg-[#0000ab] text-white rounded-xl hover:bg-[#0000ab]/90 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold"
+                                >
+                                    Volver a Mis Préstamos
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vista de Error de Devolución */}
+                    {modalState === 'return-error' && returnError && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            {/* Icono de error */}
+                            <div className="relative mb-8">
+                                <div className="w-32 h-32 bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-2xl flex items-center justify-center">
+                                    <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* Mensaje de error */}
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold text-red-600">Error en la Devolución</h2>
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-md">
+                                    <p className="text-red-700 whitespace-pre-line">{returnError}</p>
+                                </div>
+
+                                {/* Botones de acción */}
+                                <div className="flex space-x-3">
+                                    <button
+                                        onClick={handleBackToList}
+                                        className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all duration-200 font-medium"
+                                    >
+                                        Volver a Mis Préstamos
+                                    </button>
+                                    {returningLoan && (
+                                        <button
+                                            onClick={() => handleReturnBook(returningLoan.id)}
                                             className="px-6 py-3 bg-[#0000ab] text-white rounded-xl hover:bg-[#0000ab]/90 transition-all duration-200 font-medium"
                                         >
                                             Intentar de Nuevo
