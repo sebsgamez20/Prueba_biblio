@@ -27,6 +27,9 @@ Route::prefix('books')->group(function () {
     Route::delete('/{book}', [BookController::class, 'destroy'])->middleware('admin');
 });
 
+// Ruta para estadísticas (solo admins)
+Route::get('/statistics', [BookController::class, 'getStatistics'])->middleware('admin');
+
 // Rutas de la API para préstamos
 Route::prefix('loans')->group(function () {
     Route::post('/rent', [LoanController::class, 'rentBook']);
