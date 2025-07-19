@@ -21,6 +21,7 @@ Route::post('/create-admin', [AuthController::class, 'createAdmin']);
 // Rutas de la API para libros
 Route::prefix('books')->group(function () {
     Route::get('/', [BookController::class, 'index']);
+    Route::get('/genres', [BookController::class, 'getGenres']);
     Route::post('/', [BookController::class, 'store']);
     Route::get('/{book}', [BookController::class, 'show']);
     Route::put('/{book}', [BookController::class, 'update']);

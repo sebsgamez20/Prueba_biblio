@@ -1,44 +1,46 @@
-# Imagen base oficial con PHP, Composer y extensiones
-FROM composer:2.5 as build
+# Etapa de construcción (instala PHP, Composer, Node, npm, y compila assets)
+FROM php:8.2-cli-bullseye as build
 
-# Directorio de trabajo dentro del contenedor
+# Instala dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    git unzip curl libpng-dev libonig-dev libxml2-dev zip libzip-dev \
+    libjpeg-dev libfreetype6-dev nodejs npm
+
+# Instala Composer manualmente
+RUN curl -sS https://getcomposer.org/installer | php && \
+    mv composer.phar /usr/local/bin/composer
+
+# Instala extensiones de PHP necesarias
+RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl gd
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia los archivos del proyecto
+# Copia todo el proyecto
 COPY . .
 
-# Instala dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader
-
-# Instala dependencias de Node y genera assets
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get update && apt-get install -y nodejs && \
+# Instala dependencias PHP y JS
+RUN composer install --no-dev --optimize-autoloader && \
     npm install && npm run build
 
-# Etapa final: usa una imagen de Laravel optimizada
-FROM php:8.2-fpm
+# Etapa final para correr la app
+FROM php:8.2-cli-bullseye
 
-# Instala extensiones necesarias
+# Instala extensiones necesarias también aquí
 RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip git curl && \
-    docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    libpng-dev libonig-dev libxml2-dev zip unzip git && \
+    docker-php-ext-install pdo pdo_mysql mbstring exif pcntl gd
 
-# Instala Composer
-COPY --from=build /usr/bin/composer /usr/bin/composer
-
-# Copia el código final
+# Copia el proyecto construido
 COPY --from=build /app /var/www/html
 
-# Da permisos adecuados
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
-# Establece directorio de trabajo
+# Establece el directorio de trabajo
 WORKDIR /var/www/html
 
-# Expone el puerto 8000 para Laravel
+# Expone el puerto 8000 (Laravel)
 EXPOSE 8000
 
-# Comando para correr el servidor
+# Comando para correr Laravel
 CMD php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
